@@ -1,0 +1,264 @@
+import * as varietyPresentation from '../Client/app/varieties.js';
+/** Exercise the shipped adventure UI handlers with isolated DOM and socket adapters.
+ * Run: node --test Tests/check_adventure_ui.mjs
+ */
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+import test from 'node:test';
+const source=fs.readFileSync(new URL('../Client/app/app.js',import.meta.url),'utf8');
+const html=fs.readFileSync(new URL('../Client/app/index.html',import.meta.url),'utf8');
+class Element{
+ constructor(tag='div'){this.tagName=tag.toUpperCase();this.children=[];this.events=new Map();this.attributes={};this.style={};this.value='';this.textContent='';this.disabled=false;this.open=false;this.scrollTop=0;this.classes=new Set();this.classList={add:k=>this.classes.add(k),remove:k=>this.classes.delete(k),contains:k=>this.classes.has(k),toggle:(k,on)=>on??!this.classes.has(k)?this.classes.add(k):this.classes.delete(k)};}
+ append(...nodes){this.children.push(...nodes);}prepend(...nodes){this.children.unshift(...nodes);}replaceChildren(...nodes){this.children=nodes;}setAttribute(k,v){this.attributes[k]=String(v);}getAttribute(k){return this.attributes[k]??null;}
+ addEventListener(k,fn){if(!this.events.has(k))this.events.set(k,[]);this.events.get(k).push(fn);}dispatch(k,event={}){return (this.events.get(k)||[]).map(fn=>fn({target:this,currentTarget:this,preventDefault(){},...event}));}
+ click(){return this.dispatch('click');}close(){this.open=false;}showModal(){this.open=true;}remove(){}focus(){}blur(){}closest(){return null;}querySelector(){return null;}
+ get firstChild(){return this.children[0];}
+}
+const flatten=node=>[node,...node.children.flatMap(flatten)];
+const text=node=>node.textContent+node.children.map(text).join('');
+function harness(){
+ const nodes=new Map(),byId=id=>{if(!nodes.has(id))nodes.set(id,new Element());return nodes.get(id);};
+ const document=new Element();Object.assign(document,{getElementById:byId,createElement:t=>new Element(t),createTextNode:t=>Object.assign(new Element('#text'),{textContent:t}),activeElement:null});
+ const species={fr_1:{name:'Bulbasaur',front:'bulbasaur.png',back:'bulbasaur-back.png',shiny:'bulbasaur-shiny.png',types:[12]},fr_2:{name:'Ivysaur',front:'ivysaur.png',types:[12]},fr_4:{name:'Charmander',front:'charmander.png',types:[10]},fr_152:{name:'Chikorita',front:'chikorita.png',types:[12]}};
+ const content={pack:'adventure-test-pack',species,starters:['fr_1','fr_4','fr_152'],items:{potion:{name:'Potion',price:100,heal:20},leaf_stone:{name:'Leaf Stone',price:2100,evolutionStone:true},squirtbottle:{name:'SquirtBottle',price:0,keyItem:true,buyable:false,tradable:false,description:'A bottle used for watering plants.'}},moves:{1:{name:'Tackle',pp:35},2:{name:'Growl',pp:40},3:{name:'Vine Whip',pp:10},4:{name:'Poison Powder',pp:35},5:{name:'Razor Leaf',pp:25}},objects:{kanto:{}},maps:{},homes:{Kanto:'kanto_3_0',Johto:'johto_3_0'}};
+ const mon=(uid,species='fr_1')=>({uid,species,name:content.species[species].name,shiny:false,level:16,exp:4096,levelExp:4096,nextExp:4913,hp:35,maxHp:40,nature:'Hardy',originalTrainer:'Akumavenom',status:'',stats:[40,30,30,30,30,30],moves:[{id:1,pp:30},{id:2,pp:40}],pendingLearn:[],evolutions:[]});
+ const state={type:'state',ownerId:1,revision:2,money:3000,party:['a'],creatures:[mon('a'),mon('b','fr_4')],items:{potion:1,squirtbottle:1},adventure:{storyEvents:[],story:[],regions:[{id:'kanto',name:'Kanto',badges:[{id:'boulder',name:'Boulder Badge',leader:'Brock',order:1,earned:true},{id:'cascade',name:'Cascade Badge',leader:'Misty',order:2,earned:false}],nextGym:{name:'Cascade Badge',leader:'Misty'}}],goals:[{id:'first',title:'First steps',description:'Visit two towns.',current:2,target:2,complete:true,claimed:false,reward:{money:500,items:{potion:2}}},{id:'later',title:'Keep exploring',description:'Visit five towns.',current:2,target:5,complete:false,claimed:false,reward:{money:100}}],trainers:{defeated:['youngster'],count:1},dex:{seen:['fr_1','fr_4'],caught:['fr_1']},visited:['kanto_3_0','kanto_3_1'],unlocks:['route_2'],pcAvailable:false}};
+ const session={id:1,username:'Akumavenom',world:'Adventure world',cap:1000,alphaAtlas:true,alphaSurf:true};
+ const own={id:1,map:'kanto_5_4',x:7,y:5,appearance:0};
+ const socket={readyState:1,sent:[],send(data){this.sent.push(JSON.parse(data));},close(){this.readyState=2;}};
+ const audioCalls=[];const audio=new Proxy({settings:{}},{get:(target,key)=>key in target?target[key]:(...args)=>audioCalls.push([key,...args])});
+ const renderer={cutTrees:{},storyEvents:[],setCutTrees(cuts){this.cutTrees=cuts||{};},setStoryEvents(events){this.storyEvents=events||[];},setItemPickups(items){this.itemPickups=items||[];},setRemovedObjects(items){this.removedObjects=items||{};},players:new Map(),active:true,resize(){},scene(){},entity(){},resetSession(){},loadMap:async()=>true};
+ const context=vm.createContext({...varietyPresentation,Node:Element,document,window:new Element(),GameAudio:class{constructor(){return audio;}},WorldRenderer:class{},mountAudioControls(){},WebSocket:{OPEN:1},setInterval(){},setTimeout(){},clearTimeout(){},performance:{now:()=>0},console});
+ const script=source.replace(/^import .*?;\n/gm,'').replace(/boot\(\);\s*$/,`globalThis.api={showPokemon,showCollection,showJournal,showDex,showBag,showItemAction,appendSafariActions,showNpcDialog,showAtlas,canTravelTo,updateAdventureAccess,requestSurf,setupInput,handle,loadMap,closeModal,get state(){return state;},get modal(){return modalKind;},seed(values){({content,state,session,own,ws,renderer}=values);},busy(kind){trade=kind==='trade'?{}:null;activeBattle=kind==='battle'?{}:null;},changeOwner(){session={id:2};}};`);
+ vm.runInContext(script,context,{filename:'app.js'});context.api.seed({content,state,session,own,ws:socket,renderer});
+ byId('home').value='Kanto';
+ return{app:context.api,byId,document,state,content,mon,own,session,renderer,socket,audioCalls,all:()=>flatten(byId('modal-body')),buttons:()=>flatten(byId('modal-body')).filter(n=>n.tagName==='BUTTON'),findButton:label=>flatten(byId('modal-body')).find(n=>n.tagName==='BUTTON'&&text(n)===label),words:()=>text(byId('modal-body'))};
+}
+
+test('there is no menu healing command; Nurse Joy requests explicit nearby NPC healing',()=>{
+ const h=harness();assert.doesNotMatch(html,/heal-button|Restore party/);assert.doesNotMatch(source,/send\('heal'/);
+ h.app.showNpcDialog({title:'Nurse Joy',message:'Welcome to our Pokémon Center.',npc:3,actions:['heal','pc']});
+ assert.match(h.words(),/Would you like her to take care/);const heal=h.findButton('Yes, please heal my party');heal.dispatch('click');heal.dispatch('click');assert.deepEqual(h.socket.sent,[{op:'npc',npc:3,action:'heal'}]);
+});
+test('old Nurse Joy dialog actions are invalidated on map transition',async()=>{
+ const h=harness();h.app.showNpcDialog({title:'Nurse Joy',message:'Hello',npc:3,actions:['heal']});const heal=h.findButton('Yes, please heal my party');await h.app.loadMap({id:'johto_3_0',entity:{...h.own,map:'johto_3_0'},name:'New Bark Town',region:'Johto'});heal.dispatch('click');assert.equal(h.socket.sent.length,0);assert.equal(h.app.modal,'');
+});
+test('party and storage transfer controls require a Pokémon Center PC',()=>{
+ const h=harness();h.app.showCollection('storage');const withdraw=h.findButton('Withdraw');assert.equal(withdraw.disabled,true);withdraw.dispatch('click');assert.equal(h.socket.sent.length,0);
+ h.state.adventure.pcAvailable=true;h.app.showCollection('storage');h.findButton('Withdraw').dispatch('click');assert.deepEqual(h.socket.sent,[{op:'pc',action:'withdraw',uid:'b'}]);
+});
+test('deposits use the PC operation, preserve at least one party member and never fake a party reorder',()=>{
+ const h=harness();h.state.adventure.pcAvailable=true;h.app.showCollection('party');assert.equal(h.findButton('Deposit').disabled,true);
+ h.state.party.push('b');h.app.showCollection('party');h.findButton('Deposit').dispatch('click');assert.deepEqual(h.socket.sent,[{op:'pc',action:'deposit',uid:'a'}]);
+});
+test('full parties cannot withdraw, and movement away closes a storage session',()=>{
+ const h=harness();for(let i=0;i<5;i++){const mon=h.mon('extra'+i);h.state.creatures.push(mon);h.state.party.push(mon.uid);}h.state.adventure.pcAvailable=true;h.app.showCollection('storage');assert.equal(h.findButton('Withdraw').disabled,true);
+ h.app.handle({type:'move',seq:1,entity:h.own,pcAvailable:false});assert.equal(h.app.modal,'');assert.equal(h.state.adventure.pcAvailable,false);
+});
+test('a foreign owner state cannot grant PC access or change the open collection',()=>{
+ const h=harness();h.app.showCollection('storage');h.app.handle({...h.state,ownerId:2,revision:99,adventure:{...h.state.adventure,pcAvailable:true}});assert.equal(h.app.state.ownerId,1);assert.equal(h.findButton('Withdraw').disabled,true);
+});
+test('journal reflects saved badges and allows only a completed unclaimed reward',()=>{
+ const h=harness();h.app.showJournal();assert.match(h.words(),/Boulder Badge/);assert.match(h.words(),/Misty/);assert.match(h.words(),/1Trainers defeated/);const claim=h.findButton('Claim reward');claim.dispatch('click');claim.dispatch('click');assert.deepEqual(h.socket.sent,[{op:'journal.claim',id:'first'}]);assert.equal(h.findButton('In progress').disabled,true);
+ const saved=structuredClone(h.state);saved.revision++;saved.adventure.goals[0].claimed=true;h.app.handle(saved);assert.equal(h.findButton('Reward collected').disabled,true);
+});
+test('Pokédex includes only discoveries, keeps historical catches and does not reveal unseen search results',()=>{
+ const h=harness();h.app.showDex();assert.match(h.words(),/Bulbasaur/);assert.match(h.words(),/Charmander/);assert.doesNotMatch(h.words(),/Ivysaur|Chikorita/);assert.deepEqual(h.all().filter(n=>n.tagName==='IMG').map(n=>n.getAttribute('alt')),['Bulbasaur','Charmander']);
+ const search=h.all().find(n=>n.getAttribute('data-focus')==='dex-search');search.value='Chikorita';search.dispatch('input');assert.equal(h.all().filter(n=>n.tagName==='IMG').length,0);
+ h.state.adventure.dex.caught.push('fr_152');h.app.showDex();assert.match(h.words(),/Chikorita/);assert.equal(h.state.creatures.some(m=>m.species==='fr_152'),false);
+});
+test('move learning explicitly sends the chosen forget slot for the first queued move only',()=>{
+ const h=harness(),mon=h.state.creatures[0];mon.moves=[{id:1,pp:30},{id:2,pp:40},{id:3,pp:10},{id:4,pp:35}];mon.pendingLearn=[{move:5,name:'Razor Leaf',level:20},{move:3,name:'Vine Whip',level:21}];h.app.showPokemon(mon);h.findButton('Forget Growl').dispatch('click');assert.deepEqual(h.socket.sent,[{op:'pokemon.learn',uid:'a',move:5,slot:1}]);assert.match(h.words(),/1 more move choices/);
+});
+test('move learning fills a free slot or declines explicitly without replacing another move',()=>{
+ const h=harness(),mon=h.state.creatures[0];mon.pendingLearn=[{move:3,name:'Vine Whip',level:7}];h.app.showPokemon(mon);h.findButton('Learn Vine Whip').dispatch('click');assert.deepEqual(h.socket.sent.at(-1),{op:'pokemon.learn',uid:'a',move:3,slot:2});h.app.showPokemon(mon);h.findButton('Do not learn this move').dispatch('click');assert.deepEqual(h.socket.sent.at(-1),{op:'pokemon.learn',uid:'a',move:3,slot:null});
+});
+test('evolution can be accepted, deferred and resumed through explicit owner commands',()=>{
+ const h=harness(),mon=h.state.creatures[0];mon.evolutions=[{target:'fr_2',name:'Ivysaur',method:'level',level:16,deferred:false}];h.app.showPokemon(mon);h.findButton('Evolve into Ivysaur').dispatch('click');assert.deepEqual(h.socket.sent.at(-1),{op:'pokemon.evolve',uid:'a',target:'fr_2'});h.app.showPokemon(mon);h.findButton('Not now').dispatch('click');assert.deepEqual(h.socket.sent.at(-1),{op:'pokemon.evolution.defer',uid:'a',target:'fr_2'});mon.evolutions[0].deferred=true;h.app.showPokemon(mon);assert.equal(h.findButton('Evolve into Ivysaur'),undefined);h.findButton('Resume evolution').dispatch('click');assert.deepEqual(h.socket.sent.at(-1),{op:'pokemon.evolution.resume',uid:'a',target:'fr_2'});
+});
+test('item evolution is disabled without the required item',()=>{
+ const h=harness(),mon=h.state.creatures[0];mon.evolutions=[{target:'fr_2',name:'Ivysaur',method:'stone',item:'leaf_stone',deferred:false}];h.app.showPokemon(mon);assert.equal(h.findButton('Evolve into Ivysaur').disabled,true);h.state.items.leaf_stone=1;h.app.showPokemon(mon);assert.equal(h.findButton('Evolve into Ivysaur').disabled,false);
+});
+test('stale growth and journal controls cannot act for another owner or during a trade',()=>{
+ const h=harness(),mon=h.state.creatures[0];mon.pendingLearn=[{move:3,name:'Vine Whip',level:7}];h.app.showPokemon(mon);const learn=h.findButton('Learn Vine Whip');h.app.changeOwner();learn.dispatch('click');assert.equal(h.socket.sent.length,0);
+ const other=harness();other.app.showJournal();const claim=other.findButton('Claim reward');other.app.busy('trade');claim.dispatch('click');assert.equal(other.socket.sent.length,0);
+});
+test('owner state refresh updates inspected growth without replaying Pokémon cries',()=>{
+ const h=harness(),mon=h.state.creatures[0];h.app.showPokemon(mon);const next=structuredClone(h.state);next.revision++;next.creatures[0].pendingLearn=[{move:3,name:'Vine Whip',level:7}];h.app.handle(next);assert.ok(h.findButton('Learn Vine Whip'));assert.equal(h.audioCalls.filter(([op])=>op==='inspectPokemon').length,1);
+});
+test('adventure hotkeys preserve WASD movement and use G for the Pokédex',()=>{
+ const h=harness();h.app.setupInput();h.document.dispatch('keydown',{key:'g',repeat:false});assert.equal(h.app.modal,'dex');h.app.closeModal(true);h.document.dispatch('keydown',{key:'j',repeat:false});assert.equal(h.app.modal,'journal');assert.match(html,/Pokédex <kbd>G<\/kbd>/);
+});
+
+test('Surf requires current authoritative regional shoreline context and cannot be toggled off on water',()=>{
+ const h=harness();h.session.alphaSurf=true;h.renderer.map={id:h.own.map,objects:[]};h.app.updateAdventureAccess();assert.equal(h.byId('surf-button').disabled,true,'legacy alpha flag cannot bypass the Surf requirements');h.state.surfContext={map:h.own.map,origin:{x:h.own.x,y:h.own.y},available:true,partner:{species:'fr_1',name:'Water partner'},shoreline:{direction:'right'}};h.app.updateAdventureAccess();assert.equal(h.byId('surf-button').disabled,false);h.own.map='johto_3_0';h.app.updateAdventureAccess();assert.equal(h.byId('surf-button').disabled,true,'a Kanto context cannot unlock Johto');h.own.surf=true;h.app.updateAdventureAccess();assert.equal(h.byId('surf-button').disabled,true,'dismount occurs on walkable land, never while still in water');assert.equal(h.byId('atlas-button').disabled,false);
+});
+
+test('Travel Pass enables only visited waypoints and starting towns while preserving explicit exploration override',()=>{
+ const h=harness();h.session.alphaAtlas=false;assert.equal(h.app.canTravelTo({id:'kanto_3_0',mapType:1}),false);h.state.adventure.unlocks.push('travel_pass');assert.equal(h.app.canTravelTo({id:'kanto_3_1',mapType:2}),true);assert.equal(h.app.canTravelTo({id:'johto_3_0',mapType:1}),true);assert.equal(h.app.canTravelTo({id:'johto_3_20',mapType:3}),false);h.session.alphaAtlas=true;assert.equal(h.app.canTravelTo({id:'johto_3_20',mapType:3}),true);assert.equal(h.app.canTravelTo({id:'johto_3_20',playable:false}),false);
+});
+test('Bag separates owned items from Mart supplies and gates purchases by clerk proximity',()=>{
+ const h=harness();h.session.alphaAtlas=false;h.renderer.map={id:h.own.map,objects:[]};h.app.showBag();assert.equal(h.findButton('Buy 1 · ₽ 100').disabled,true);assert.doesNotMatch(h.words(),/Leaf Stone/);h.state.creatures[0].hp=1;h.findButton('Use…').dispatch('click');h.findButton('Confirm use').dispatch('click');const used=h.socket.sent.at(-1);assert.ok(used.requestId);assert.deepEqual({...used,requestId:undefined},{op:'use',item:'potion',uid:'a',requestId:undefined});
+ h.app.handle({...h.state,revision:3,itemReceipt:used.requestId});h.renderer.map.objects=[{graphics:68,x:h.own.x+1,y:h.own.y}];h.app.showBag();assert.equal(h.findButton('Buy 1 · ₽ 100').disabled,false);h.findButton('Buy 1 · ₽ 100').dispatch('click');const bought=h.socket.sent.at(-1);assert.deepEqual({...bought,requestId:undefined},{op:'buy',item:'potion',quantity:1,requestId:undefined});assert.ok(bought.requestId);
+ h.findButton('Mart supplies').dispatch('click');assert.match(h.words(),/Leaf Stone/);h.all().find(n=>n.getAttribute('data-bag-item')==='leaf_stone').dispatch('click');assert.match(h.words(),/Evolution item/);assert.equal(h.findButton('Evolve…').disabled,true);
+});
+
+test('Sigma Link Cable and Fairy Dust use their actual names and generic item keys',()=>{
+ for(const [key,name] of [['linkcable','Link Cable'],['fairydust','Fairy Dust']]){
+  const h=harness(),mon=h.state.creatures[0];h.content.items[key]={name,price:2100,evolutionStone:true};mon.evolutions=[{target:'fr_2',name:'Ivysaur',method:'stone',item:key,deferred:false}];h.app.showPokemon(mon);assert.match(h.words(),new RegExp('Uses one '+name));assert.equal(h.findButton('Evolve into Ivysaur').disabled,true);
+  h.state.items[key]=1;h.app.showPokemon(mon);h.findButton('Evolve into Ivysaur').dispatch('click');assert.deepEqual(h.socket.sent.at(-1),{op:'pokemon.evolve',uid:'a',target:'fr_2',item:key});
+  h.app.showBag();assert.match(h.words(),new RegExp(name));assert.match(h.words(),/Evolution item/);
+ }
+});
+test('PC deposit keeps one healthy partner instead of leaving only fainted party members',()=>{
+ const h=harness();h.state.adventure.pcAvailable=true;h.state.party.push('b');h.state.creatures[1].hp=0;h.app.showCollection('party');const deposits=h.buttons().filter(b=>text(b)==='Deposit');assert.equal(deposits[0].disabled,true);assert.equal(deposits[1].disabled,false);
+});
+
+test('earned atlas travel locks visited interiors while keeping their browse cards and admin override',()=>{
+ const h=harness();h.session.alphaAtlas=false;h.state.adventure.unlocks.push('travel_pass');h.state.adventure.visited.push('kanto_5_4');
+ const inside={id:'kanto_5_4',mapType:8,name:'Pokémon Center',region:'Kanto'},outside={id:'kanto_3_1',mapType:2,name:'Viridian City',region:'Kanto'};h.content.maps={[inside.id]:inside,[outside.id]:outside};
+ assert.equal(h.app.canTravelTo(inside),false);assert.equal(h.app.canTravelTo(outside),true);h.app.showAtlas();const filter=h.all().find(n=>n.getAttribute('aria-label')==='Atlas region');filter.value='all';filter.dispatch('change');
+ const card=h.buttons().find(n=>text(n).includes('Pokémon Center'));assert.ok(card,'Interior remains in atlas browse');assert.equal(card.disabled,true);assert.match(text(card),/Enter through its door/);assert.equal(h.byId('modal').open,true);assert.match(h.words(),/outdoor waypoints/);
+ h.session.alphaAtlas=true;assert.equal(h.app.canTravelTo(inside),true);
+});
+
+test('locked Cut is visible, disabled and sends no command',()=>{
+ const h=harness();h.app.showNpcDialog({title:'Small HM tree',message:'Defeat Misty for the Cascade Badge.',npc:95,map:h.own.map,actions:['cut'],disabledActions:['cut'],fieldMove:{unlocked:false,badgeName:'Cascade Badge'}});
+ const cut=h.findButton('Cut tree — locked');assert.ok(cut);assert.equal(cut.disabled,true);assert.equal(cut.getAttribute('aria-disabled'),'true');cut.dispatch('click');assert.equal(h.socket.sent.length,0);assert.match(h.words(),/saved for your character only/);
+});
+test('unlocked Cut sends exactly one map-bound command and never removes a tree optimistically',()=>{
+ const h=harness();h.app.showNpcDialog({title:'Small HM tree',message:'Cut this tree.',npc:95,map:h.own.map,actions:['cut'],disabledActions:[],fieldMove:{unlocked:true}});
+ const cut=h.findButton('Cut tree');assert.equal(cut.disabled,false);cut.dispatch('click');cut.dispatch('click');assert.deepEqual(h.socket.sent,[{op:'npc',npc:95,map:h.own.map,action:'cut'}]);assert.deepEqual(h.renderer.cutTrees,{});
+ const next=structuredClone(h.state);next.revision++;next.adventure.cutTrees={[h.own.map]:[95]};h.app.handle(next);assert.deepEqual(h.renderer.cutTrees,next.adventure.cutTrees);
+});
+test('foreign and stale snapshots cannot hide an owner tree',()=>{
+ const h=harness();h.app.handle({...h.state,ownerId:2,revision:90,adventure:{...h.state.adventure,cutTrees:{[h.own.map]:[95]}}});assert.deepEqual(h.renderer.cutTrees,{});
+ h.app.handle({...h.state,revision:0,adventure:{...h.state.adventure,cutTrees:{[h.own.map]:[95]}}});assert.deepEqual(h.renderer.cutTrees,{});
+});
+test('delayed tree menus and old Cut controls cannot act after a map change',async()=>{
+ const h=harness(),oldMap=h.own.map;
+ h.app.showNpcDialog({title:'Small HM tree',message:'Cut.',npc:95,map:oldMap,actions:['cut'],fieldMove:{unlocked:true}});const cut=h.findButton('Cut tree');
+ await h.app.loadMap({id:'johto_3_0',entity:{...h.own,map:'johto_3_0'},name:'New Bark Town',region:'Johto'});cut.dispatch('click');assert.equal(h.socket.sent.length,0);
+ h.app.showNpcDialog({title:'Small HM tree',message:'Old map.',npc:95,map:oldMap,actions:['cut'],fieldMove:{unlocked:true}});assert.equal(h.app.modal,'');
+});
+test('journal shows independent Cut badge requirements for both regions',()=>{
+ const h=harness();h.state.adventure.fieldMoves=[{region:'kanto',unlocked:true,leader:'Misty',city:'Cerulean City',badgeName:'Cascade Badge'},{region:'johto',unlocked:false,leader:'Bugsy',city:'Azalea Town',badgeName:'Hive Badge'}];h.app.showJournal();assert.match(h.words(),/CUT UNLOCKED/);assert.match(h.words(),/CUT LOCKED/);assert.match(h.words(),/Defeat Bugsy in Azalea Town/);assert.match(h.words(),/does not replace a partner/);
+});
+
+test('variety collection filter and names distinguish same-species owned partners',()=>{
+ const h=harness();h.content.varietyPolicy={definitions:{ancient:{label:'Ancient',color:'#FFAA55'},mystic:{label:'Mystic',color:'#C49AFF'}}};h.content.species.fr_1.varieties={ancient:{front:'ancient.png'},mystic:{front:'mystic.png'}};
+ for(const v of ['ancient','mystic'])h.state.creatures.push({...h.mon(v),variety:v});h.app.showCollection('storage');assert.match(h.words(),/Ancient Bulbasaur/);assert.match(h.words(),/Mystic Bulbasaur/);
+ const select=h.all().find(n=>n.getAttribute('aria-label')==='Filter Pokémon variety');select.value='mystic';select.dispatch('change');assert.match(h.words(),/Mystic Bulbasaur/);const images=h.all().filter(n=>n.tagName==='IMG');assert.equal(images.length,1);assert.equal(images[0].getAttribute('src'),'assets/mystic.png');assert.equal(h.socket.sent.length,0);
+});
+test('variety summary and evolution preview use the correct target front without replacing identity',()=>{
+ const h=harness(),mon=h.state.creatures[0];mon.variety='shadow';h.content.species.fr_1.varieties={shadow:{front:'shadow-bulbasaur.png'}};h.content.species.fr_2.varieties={shadow:{front:'shadow-ivysaur.png'}};mon.evolutions=[{target:'fr_2',name:'Ivysaur',method:'level'}];h.app.showPokemon(mon);
+ assert.match(h.words(),/Shadow Bulbasaur.*Shadow Ivysaur/);assert.ok(h.all().some(n=>n.getAttribute('src')==='assets/shadow-ivysaur.png'));h.findButton('Evolve into Ivysaur').dispatch('click');assert.deepEqual(h.socket.sent[0],{op:'pokemon.evolve',uid:mon.uid,target:'fr_2'});assert.equal(mon.variety,'shadow');
+});
+test('private dex shows seen versus caught varieties and no undiscovered variety spoilers',()=>{
+ const h=harness();h.state.adventure.dex.varieties={seen:{fr_1:['normal','ancient','shadow']},caught:{fr_1:['normal','ancient']}};h.app.showDex();assert.match(h.words(),/● Ancient/);assert.match(h.words(),/○ Shadow/);assert.doesNotMatch(h.words(),/Mystic|Metallic|Shiny/);assert.equal(h.socket.sent.length,0);
+});
+test('SquirtBottle is a non-purchasable Key Item and Route 36 action is server-bound',()=>{
+ const h=harness();h.app.showBag();const row=h.all().find(n=>n.getAttribute('data-bag-item')==='squirtbottle');assert.equal(row.getAttribute('aria-label'),'SquirtBottle, 1 owned');row.dispatch('click');assert.match(h.words(),/Cannot be sold/);assert.equal(h.buttons().filter(b=>text(b).startsWith('Buy')).length,0,'Key Items expose no purchase controls');
+ h.app.showNpcDialog({title:'Odd tree',message:'The odd tree squirms.',npc:3,map:h.own.map,actions:['squirtbottle'],disabledActions:[],storyEvent:{id:'johto_sudowoodo',ready:true,cleared:false,badgeEarned:true,itemOwned:true,requiredBadgeName:'Plain Badge',leader:'Whitney',itemName:'SquirtBottle'}});
+ const use=h.findButton('Use SquirtBottle');assert.ok(use);use.dispatch('click');use.dispatch('click');assert.deepEqual(h.socket.sent,[{op:'npc',npc:3,map:h.own.map,action:'squirtbottle'}]);assert.match(h.words(),/saved for your character|clears the obstacle only for your character/);
+});
+test('locked Sudowoodo interaction and journal explain Whitney/Plain Badge progression',()=>{
+ const h=harness();h.state.adventure.story=[{id:'johto_sudowoodo',title:'The odd tree on Route 36',cleared:false,ready:false,badgeEarned:false,itemOwned:false,requiredBadgeName:'Plain Badge',leader:'Whitney',city:'Goldenrod City',itemName:'SquirtBottle'}];h.app.showJournal();assert.match(h.words(),/Johto story progress/);assert.match(h.words(),/Defeat Whitney in Goldenrod City and earn the Plain Badge/);
+ h.app.showNpcDialog({title:'Odd tree',message:'It will not budge.',npc:3,map:h.own.map,actions:['squirtbottle'],disabledActions:['squirtbottle'],storyEvent:{ready:false,cleared:false,badgeEarned:false,itemOwned:false,requiredBadgeName:'Plain Badge',leader:'Whitney',itemName:'SquirtBottle'}});const use=h.findButton('Use SquirtBottle — Plain Badge required');assert.equal(use.disabled,true);use.dispatch('click');assert.equal(h.socket.sent.length,0);
+});
+test('owner state forwards story completion to renderer and foreign or stale snapshots cannot hide it',()=>{
+ const h=harness(),next=structuredClone(h.state);next.revision++;next.adventure.storyEvents=['johto_sudowoodo'];h.app.handle(next);assert.deepEqual(h.renderer.storyEvents,['johto_sudowoodo']);
+ h.app.handle({...next,ownerId:2,revision:99,adventure:{...next.adventure,storyEvents:['forged']}});assert.deepEqual(h.renderer.storyEvents,['johto_sudowoodo']);h.app.handle({...next,revision:1,adventure:{...next.adventure,storyEvents:['forged']}});assert.deepEqual(h.renderer.storyEvents,['johto_sudowoodo']);
+});
+
+test('field-only Sigma items stay out of the Bag until collected and are not offered for sale',()=>{
+ const h=harness();h.content.items.choicescarf={name:'Choice Scarf',price:900,buyable:false,tradable:true,fieldItem:true,description:'Field item'};h.app.showBag();assert.doesNotMatch(h.words(),/Choice Scarf/);
+ const buyButtonsBefore=h.buttons().filter(button=>text(button).startsWith('Buy')).length;
+ h.state.items.choicescarf=1;h.app.showBag();assert.equal(h.all().find(n=>n.getAttribute('data-bag-item')==='choicescarf').getAttribute('aria-label'),'Choice Scarf, 1 owned');
+ const buyButtonsAfter=h.buttons().filter(button=>text(button).startsWith('Buy')).length;assert.equal(buyButtonsAfter,buyButtonsBefore);
+});
+
+// Inventory behavior must remain stable while authoritative state packets arrive.
+const nativeItem=(name,pocket,effect,extra={})=>({name,source:'kanto',sourceId:13,pocket,pocketName:{1:'items',2:'key-items',3:'poke-balls',4:'tm-hm',5:'berries'}[pocket],price:300,buyable:false,icon:'items/kanto/13.png',mechanics:{effect,description:name+' native effect.',field:true,target:'none',...extra}});
+const bagRows=h=>h.all().filter(n=>n.getAttribute('data-bag-item'));
+const focusedControl=(h,key)=>h.all().find(n=>n.getAttribute('data-focus')===key);
+function nativeBagFixture(){const h=harness();h.content.items.fr_potion=nativeItem('Potion',1,'medicine',{target:'pokemon',heal:20});h.content.items.fr_tm01=nativeItem('TM01',4,'machine',{target:'machine',move:1});h.content.items.fr_oranberry=nativeItem('Oran Berry',5,'medicine',{target:'pokemon',heal:10});h.content.items.fr_pokeball=nativeItem('Poké Ball',3,'capture',{battle:true,field:false});h.content.items.fr_itemfinder=nativeItem('Itemfinder',2,'itemfinder');h.content.items.fr_coincase=nativeItem('Coin Case',2,'coincase');h.state.items={fr_potion:5,fr_tm01:1,fr_oranberry:8,fr_pokeball:12,fr_itemfinder:1,fr_coincase:1};h.state.itemContext={mart:false,shopItems:[]};return h;}
+
+test('five native pockets separate item identities, show original icons and filter owned stacks',()=>{
+ const h=nativeBagFixture();h.app.showBag();assert.equal(bagRows(h).length,6);assert.ok(h.all().some(n=>n.tagName==='IMG'&&n.getAttribute('src')==='assets/items/kanto/13.png'));
+ for(const [pocket,expected] of [['items',['fr_potion']],['key',['fr_itemfinder','fr_coincase']],['balls',['fr_pokeball']],['machines',['fr_tm01']],['berries',['fr_oranberry']]]){focusedControl(h,'bag-pocket-'+pocket).dispatch('click');assert.deepEqual(bagRows(h).map(row=>row.getAttribute('data-bag-item')).sort(),expected.sort());}
+});
+test('search, pocket, sort and selected detail survive state packets and filtering an empty result',()=>{
+ const h=nativeBagFixture();h.app.showBag();focusedControl(h,'bag-pocket-items').dispatch('click');const search=focusedControl(h,'bag-search');search.value='potion';search.dispatch('input');const sort=focusedControl(h,'bag-sort');sort.value='quantity';sort.dispatch('change');h.app.handle({...h.state,revision:3,items:{...h.state.items,fr_potion:3}});assert.equal(focusedControl(h,'bag-search').value,'potion');assert.equal(focusedControl(h,'bag-sort').value,'quantity');assert.equal(focusedControl(h,'bag-pocket-items').getAttribute('aria-selected'),'true');assert.equal(h.all().find(n=>n.getAttribute('data-item')).getAttribute('data-item'),'fr_potion');assert.equal(bagRows(h)[0].getAttribute('aria-label'),'Potion, 3 owned, Kanto');focusedControl(h,'bag-search').value='not-an-item';focusedControl(h,'bag-search').dispatch('input');assert.equal(bagRows(h).length,0);assert.match(h.words(),/No matching items/);h.findButton('Clear').dispatch('click');assert.equal(bagRows(h).length,1);
+});
+test('quantity sorting and arrow navigation choose item details without issuing a gameplay command',()=>{
+ const h=nativeBagFixture();h.app.showBag();const sort=focusedControl(h,'bag-sort');sort.value='quantity';sort.dispatch('change');assert.equal(bagRows(h)[0].getAttribute('data-bag-item'),'fr_pokeball');bagRows(h)[0].dispatch('click');const list=h.all().find(n=>n.className==='bag-list');list.dispatch('keydown',{key:'ArrowDown'});assert.equal(h.all().find(n=>n.getAttribute('data-item')).getAttribute('data-item'),'fr_oranberry');list.dispatch('keydown',{key:'End'});assert.equal(h.all().find(n=>n.getAttribute('data-item')).getAttribute('data-item'),bagRows(h).at(-1).getAttribute('data-bag-item'));assert.equal(h.socket.sent.length,0);
+});
+test('pending item commands survive unrelated and foreign state packets and only matching receipt unlocks',()=>{
+ const h=nativeBagFixture();h.state.creatures[0].hp=1;h.app.showItemAction({key:'fr_potion'});const confirm=h.findButton('Confirm use');confirm.dispatch('click');confirm.dispatch('click');assert.equal(h.socket.sent.length,1);const request=h.socket.sent[0];assert.equal(request.item,'fr_potion');assert.equal(request.uid,'a');h.app.handle({...h.state,revision:3,itemReceipt:'another-command'});assert.equal(h.findButton('Saving…').disabled,true);h.findButton('Saving…').dispatch('click');assert.equal(h.socket.sent.length,1);h.app.handle({...h.state,ownerId:2,revision:99,itemReceipt:request.requestId});assert.equal(h.findButton('Saving…').disabled,true);h.app.handle({...h.state,revision:4,itemReceipt:request.requestId});assert.equal(h.findButton('Confirm use').disabled,false);
+});
+test('a rejected item command leaves quantity unchanged and unlocks a deliberate retry',()=>{
+ const h=nativeBagFixture();h.app.showItemAction({key:'fr_itemfinder'});h.findButton('Confirm use').dispatch('click');assert.equal(h.state.items.fr_itemfinder,1);h.app.handle({type:'error',message:'Move to Kanto first.'});assert.equal(h.findButton('Confirm use').disabled,false);assert.equal(h.state.items.fr_itemfinder,1);h.findButton('Confirm use').dispatch('click');assert.notEqual(h.socket.sent[0].requestId,h.socket.sent[1].requestId);
+});
+test('native target selectors use the party, keep stored Pokémon out and preserve optional Mail text',()=>{
+ const h=nativeBagFixture();h.state.creatures[0].hp=1;h.content.items.fr_orangemail=nativeItem('Orange Mail',1,'mail',{field:true,target:'pokemon',held:{legacyCode:121}});h.state.items.fr_orangemail=2;h.app.showItemAction({key:'fr_potion'});assert.equal(focusedControl(h,'item-target').children.length,1);assert.equal(focusedControl(h,'item-target').children[0].getAttribute('value'),'a');h.app.showItemAction({key:'fr_orangemail',action:'give'});const mail=focusedControl(h,'item-mail-message');mail.value='From Pallet Town, with love.';mail.dispatch('input');h.findButton('Confirm held item').dispatch('click');assert.equal(h.socket.sent[0].message,'From Pallet Town, with love.');assert.equal(h.socket.sent[0].uid,'a');
+});
+test('Mart supplies show only exact native stock and reject oversized purchase quantities before send',()=>{
+ const h=nativeBagFixture();h.content.items.fr_potion.buyable=true;h.content.items.fr_pokeball.buyable=true;h.state.itemContext={mart:true,shopItems:['fr_potion']};h.app.showBag();h.findButton('Mart supplies').dispatch('click');assert.deepEqual(bagRows(h).map(row=>row.getAttribute('data-bag-item')),['fr_potion']);const amount=focusedControl(h,'bag-buy-quantity');amount.value='100';amount.dispatch('input');const buy=h.buttons().find(b=>text(b).startsWith('Buy '));assert.equal(buy.disabled,true);buy.dispatch('click');assert.equal(h.socket.sent.length,0);amount.value='2';amount.dispatch('input');h.buttons().find(b=>text(b).startsWith('Buy ')).dispatch('click');assert.equal(h.socket.sent[0].quantity,2);assert.ok(h.socket.sent[0].requestId);
+});
+test('native Coin Case offers the exact contextual prizes and sends their kind and reward',()=>{
+ const h=nativeBagFixture();h.state.money=20000;h.state.coins=500;h.state.itemContext={coinCounter:true,coinPrizes:[{kind:'pokemon',reward:'fr_1',name:'Bulbasaur',coins:100,level:10,available:true},{kind:'item',reward:'fr_tm01',name:'TM01',coins:200,available:false}]};h.app.showItemAction({key:'fr_coincase',action:'service'});assert.ok(h.findButton('Buy 50 coins · ₽ 1,000'));assert.ok(h.findButton('Buy 500 coins · ₽ 10,000'));assert.match(h.words(),/Bulbasaur100 coins · Lv. 10/);const exchanges=h.buttons().filter(b=>text(b)==='Exchange');assert.equal(exchanges[0].disabled,false);assert.equal(exchanges[1].disabled,true);exchanges[0].dispatch('click');assert.deepEqual({...h.socket.sent[0],requestId:undefined},{op:'item.service',item:'fr_coincase',action:'prize',reward:'fr_1',kind:'pokemon',map:h.own.map,requestId:undefined});
+});
+test('gift options use server readiness, explanation and map-bound IDs without granting an item locally',()=>{
+ const h=nativeBagFixture();h.app.showNpcDialog({title:'Oak’s aide',message:'Your discoveries are impressive.',npc:2,map:h.own.map,actions:[],giftOptions:[{id:'finder',item:'fr_itemfinder',label:'Receive Itemfinder',ready:true},{id:'rod',item:'fr_potion',label:'Receive gift',ready:false,reason:'Register more Pokémon.'}]});assert.match(h.words(),/Register more Pokémon/);assert.equal(h.findButton('Receive gift').disabled,true);h.findButton('Receive Itemfinder').dispatch('click');h.findButton('Receive Itemfinder').dispatch('click');assert.deepEqual(h.socket.sent,[{op:'npc',npc:2,map:h.own.map,action:'gift:finder'}]);assert.equal(h.state.items.fr_itemfinder,1);
+});
+test('Safari battle controls expose only balls, bait, rocks and run with authoritative ball count',()=>{
+ const h=harness(),choices=h.byId('modal-body');h.app.appendSafariActions(choices,{safari:{balls:18,baitTurns:2,rockTurns:0},waiting:false});assert.deepEqual(h.buttons().map(text),['Throw Safari Ball','Throw Bait','Throw Rock','Run']);assert.match(h.words(),/18 Safari Balls left/);assert.match(h.words(),/The wild Pokémon is eating/);choices.replaceChildren();h.app.appendSafariActions(choices,{safari:{balls:0,baitTurns:0,rockTurns:1},waiting:false});assert.equal(h.findButton('Throw Safari Ball').disabled,true);assert.match(h.words(),/The wild Pokémon is angry/);
+});
+test('Safari gate entry is explicitly priced and map-bound, with no optimistic wallet edit',()=>{
+ const h=harness();h.app.showNpcDialog({title:'Safari Zone',message:'A Safari Game costs ₽500.',npc:1,map:h.own.map,actions:['safari_enter']});h.findButton('Enter Safari Game · ₽500').dispatch('click');assert.deepEqual(h.socket.sent,[{op:'npc',npc:1,map:h.own.map,action:'safari_enter'}]);assert.equal(h.state.money,3000);h.state.money=0;h.app.showNpcDialog({title:'Safari Zone',npc:1,map:h.own.map,actions:['safari_enter']});assert.equal(h.findButton('Enter Safari Game · ₽500').disabled,true);
+});
+test('conditional ground gifts disappear only from the owning trainer’s current snapshot',()=>{
+ const h=harness(),removed={kanto_1_1:[3,4]},next={...h.state,revision:3,adventure:{...h.state.adventure,removedObjects:removed}};h.app.handle(next);assert.deepEqual(h.renderer.removedObjects,removed);h.app.handle({...next,ownerId:2,revision:8,adventure:{...next.adventure,removedObjects:{kanto_1_1:[99]}}});assert.deepEqual(h.renderer.removedObjects,removed);h.app.handle({...next,revision:1,adventure:{...next.adventure,removedObjects:{}}});assert.deepEqual(h.renderer.removedObjects,removed);
+});
+test('joining a new trainer clears the previous trainer’s removed ground objects',()=>{
+ const h=harness();h.renderer.removedObjects={kanto_1_1:[3,4]};h.app.handle({type:'joined',id:2,username:'SecondTrainer',world:'Test world',online:1,cap:10,motd:'Welcome.'});assert.deepEqual(Object.keys(h.renderer.removedObjects),[]);
+});
+test('Lift Key chooses only native elevator destinations and keeps the selected floor across refresh',()=>{
+ const h=nativeBagFixture();h.content.items.fr_liftkey=nativeItem('Lift Key',2,'story');h.state.items.fr_liftkey=1;h.state.itemContext.elevatorDestinations=[{id:'kanto_1_42',label:'B1F'},{id:'kanto_1_43',label:'B2F'},{id:'kanto_1_45',label:'B4F'}];h.app.showItemAction({key:'fr_liftkey'});const floor=focusedControl(h,'item-elevator-floor');assert.deepEqual(floor.children.map(text),['B1F','B2F','B4F']);floor.value='kanto_1_45';floor.dispatch('change');h.app.handle({...h.state,revision:3});assert.equal(focusedControl(h,'item-elevator-floor').value,'kanto_1_45');h.findButton('Confirm floor').dispatch('click');assert.deepEqual({...h.socket.sent[0],requestId:undefined},{op:'use',item:'fr_liftkey',destination:'kanto_1_45',map:h.own.map,requestId:undefined});assert.equal(h.state.items.fr_liftkey,1);
+});
+test('Lift Key cannot submit an elevator choice from outside the elevator',()=>{
+ const h=nativeBagFixture();h.content.items.fr_liftkey=nativeItem('Lift Key',2,'story');h.state.items.fr_liftkey=1;h.app.showItemAction({key:'fr_liftkey'});assert.equal(h.findButton('Confirm floor').disabled,true);assert.match(h.words(),/Enter the Rocket Hideout elevator/);h.findButton('Confirm floor').dispatch('click');assert.equal(h.socket.sent.length,0);
+});
+test('Powder Jar shows authoritative balance and native prices without inventing Berry Crush rewards',()=>{
+ const h=nativeBagFixture();h.content.items.fr_powderjar=nativeItem('Powder Jar',2,'case');h.state.items.fr_powderjar=1;h.state.itemContext.berryPowder=300;h.state.itemContext.powderMerchant=true;h.state.itemContext.powderPrizes=[{reward:'fr_potion',name:'Potion',powder:100},{reward:'fr_oranberry',name:'Oran Berry',powder:500}];h.app.showItemAction({key:'fr_powderjar',action:'service'});assert.match(h.words(),/300 units/);assert.match(h.words(),/100 powder · 1 item/);assert.match(h.words(),/Berry Crush is not available yet/);const exchanges=h.buttons().filter(b=>text(b)==='Exchange');assert.equal(exchanges[0].disabled,false);assert.equal(exchanges[1].disabled,true);assert.equal(exchanges[0].getAttribute('aria-label'),'Exchange Berry Powder for Potion');exchanges[0].dispatch('click');exchanges[0].dispatch('click');assert.equal(h.socket.sent.length,1);assert.deepEqual({...h.socket.sent[0],requestId:undefined},{op:'item.service',item:'fr_powderjar',action:'medicine',reward:'fr_potion',map:h.own.map,requestId:undefined});assert.equal(h.state.itemContext.berryPowder,300);assert.equal(h.state.items.fr_potion,5);
+});
+test('Powder Jar exchange stays disabled away from its merchant or when the received stack is full',()=>{
+ const h=nativeBagFixture();h.content.items.fr_powderjar=nativeItem('Powder Jar',2,'case');h.state.items.fr_powderjar=1;h.state.itemContext.berryPowder=10000;h.state.itemContext.powderPrizes=[{reward:'fr_potion',name:'Potion',powder:100}];h.app.showItemAction({key:'fr_powderjar',action:'service'});assert.equal(h.findButton('Exchange').disabled,true);h.state.itemContext.powderMerchant=true;h.state.items.fr_potion=999;h.app.showItemAction({key:'fr_powderjar',action:'service'});assert.equal(h.findButton('Exchange').disabled,true);assert.equal(h.socket.sent.length,0);
+});
+test('badge-licensed boulder and rock actions honor server locks and remain map-bound',()=>{
+ for(const [action,label] of [['push_boulder','Push boulder'],['smash_rock','Smash rock']]){const h=harness(),packet={title:'Route obstacle',message:'Your badge grants this field ability.',npc:9,map:h.own.map,actions:[action]};h.app.showNpcDialog({...packet,disabledActions:[action]});assert.equal(h.findButton(label).disabled,true);h.findButton(label).dispatch('click');assert.equal(h.socket.sent.length,0);h.app.showNpcDialog(packet);const button=h.findButton(label);button.dispatch('click');button.dispatch('click');assert.deepEqual(h.socket.sent,[{op:'npc',npc:9,map:packet.map,action}]);h.app.showNpcDialog(packet);const stale=h.findButton(label);h.own.map='kanto_3_1';stale.dispatch('click');assert.equal(h.socket.sent.length,1);}
+});
+
+function surfFixture(){const h=harness();h.content.species.fr_7={name:'Squirtle',front:'squirtle.png',types:[11]};h.state.creatures.push({...h.mon('water','fr_7'),hp:0,variety:'shiny'});h.state.party.push('water');h.renderer.map={id:h.own.map,objects:[]};h.own.direction='right';h.state.surfContext={map:h.own.map,region:'kanto',badge:'soul',badgeName:'Soul Badge',active:false,available:true,reason:'',origin:{x:h.own.x,y:h.own.y,direction:'right'},shoreline:{x:h.own.x+1,y:h.own.y,direction:'right'},partner:{uid:'water',species:'fr_7',variety:'shiny',name:'Squirtle'}};return h;}
+
+test('Surf shows the authoritative Water partner and boards once without moving the player locally',()=>{
+ const h=surfFixture();h.app.updateAdventureAccess();assert.equal(h.byId('surf-button').textContent,'Surf with Shiny Squirtle');assert.match(h.byId('surf-status').textContent,/right shoreline/);const before={...h.own};h.app.requestSurf();h.app.requestSurf();assert.equal(h.socket.sent.length,1);assert.deepEqual({...h.socket.sent[0],requestId:undefined},{op:'surf',map:before.map,x:before.x,y:before.y,direction:'right',requestId:undefined});assert.ok(h.socket.sent[0].requestId);assert.deepEqual(h.own,before);assert.equal(h.byId('surf-button').textContent,'Boarding…');assert.equal(h.byId('surf-button').disabled,true);assert.equal(h.state.creatures.at(-1).hp,0,'fainted Water-type members remain valid helpers');
+});
+test('Surf pending state ignores unrelated and foreign snapshots and clears only on its acknowledgment',()=>{
+ const h=surfFixture();h.app.requestSurf();const request=h.socket.sent[0];h.app.handle({...h.state,revision:3,surfRequestId:'unrelated'});assert.equal(h.byId('surf-button').textContent,'Boarding…');h.app.handle({...h.state,ownerId:2,revision:9,surfRequestId:request.requestId});assert.equal(h.byId('surf-button').textContent,'Boarding…');h.app.handle({...h.state,revision:4,surfRequestId:request.requestId,surfContext:{...h.state.surfContext,available:false,active:true}});assert.notEqual(h.byId('surf-button').textContent,'Boarding…');h.app.handle({type:'move',seq:1,entity:{...h.own,surf:true,surfPokemon:h.state.surfContext.partner},surfContext:{...h.state.surfContext,available:false,active:true},surfRequestId:request.requestId});assert.equal(h.byId('surf-button').textContent,'Surfing with Shiny Squirtle');assert.match(h.byId('surf-status').textContent,/Step onto a walkable shore/);assert.equal(h.byId('surf-button').disabled,true);
+});
+test('Surf explains regional badge and party failures and never trusts stale origins or unloaded maps',()=>{
+ for(const setup of [h=>{h.state.surfContext.available=false;h.state.surfContext.reason='Earn Koga’s Soul Badge in Fuchsia City.';},h=>{h.state.surfContext.origin.x--;},h=>{h.state.surfContext.map='johto_3_0';},h=>{h.renderer.pendingMap={id:h.own.map};},h=>{h.renderer.map.id='johto_3_0';},h=>{h.app.changeOwner();}]){const h=surfFixture();setup(h);h.app.updateAdventureAccess();h.app.requestSurf();assert.equal(h.socket.sent.length,0);}
+ const h=surfFixture();h.state.surfContext.available=false;h.state.surfContext.reason='Bring a Water-type Pokémon in your party.';h.app.updateAdventureAccess();assert.equal(h.byId('surf-status').textContent,h.state.surfContext.reason);assert.equal(h.byId('surf-button').disabled,true);
+});
+test('Surf failure unlocks a deliberate retry without changing land/water or partner state',()=>{
+ const h=surfFixture();h.app.requestSurf();h.app.handle({type:'error',message:'That shoreline is no longer available.'});assert.equal(h.byId('surf-button').disabled,false);assert.equal(h.own.surf,undefined);h.app.requestSurf();assert.equal(h.socket.sent.length,2);assert.notEqual(h.socket.sent[0].requestId,h.socket.sent[1].requestId);
+});
+test('Surf journal identifies Koga’s Soul Badge and Morty’s Fog Badge independently',()=>{
+ const h=surfFixture();h.state.adventure.unlocks.push('surf_kanto');h.app.showJournal();assert.match(h.words(),/Surf — regional licences/);assert.match(h.words(),/KantoSURF LICENCE EARNED/);assert.match(h.words(),/JohtoSURF LOCKED/);assert.match(h.words(),/Morty in Ecruteak City and earn the Fog Badge/);assert.match(h.words(),/without teaching an HM move/);h.state.adventure.unlocks=[];h.app.showJournal();assert.match(h.words(),/Koga in Fuchsia City and earn the Soul Badge/);
+});
+test('Surf request errors are correlated so unrelated commands cannot unlock duplicate boarding',()=>{
+ const h=surfFixture();h.app.requestSurf();const request=h.socket.sent[0];h.app.handle({type:'error',operation:'chat',requestId:'chat-1',message:'Chat is busy.'});assert.equal(h.byId('surf-button').textContent,'Boarding…');h.app.handle({type:'error',operation:'surf',requestId:'older-surf',message:'Old shoreline.'});assert.equal(h.byId('surf-button').textContent,'Boarding…');h.app.requestSurf();assert.equal(h.socket.sent.length,1);h.app.handle({type:'error',operation:'surf',requestId:request.requestId,message:'The shoreline is occupied.'});assert.equal(h.byId('surf-button').disabled,false);h.app.requestSurf();assert.equal(h.socket.sent.length,2);
+});

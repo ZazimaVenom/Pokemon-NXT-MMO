@@ -1,0 +1,115 @@
+/** Integer-scaled ROM assets, device-pixel-ratio canvas, interpolated replicated entities. */
+import {drawFollowerSparkles,frontSprite} from './varieties.js';
+export class WorldRenderer {
+ constructor(canvas,content,onPick){
+  this.canvas=canvas;this.ctx=canvas.getContext('2d',{alpha:false});this.content=content;this.onPick=onPick;this.images=new Map();this.players=new Map();this.cutTrees=new Map();this.storyEvents=new Set();this.itemPickups=new Set();this.removedObjects=new Map();this.fieldTiles={map:null,tiles:[]};this.objectMoves={};this.map=null;this.pendingMap=null;this.selfId=null;this.scale=3;this.manualScale=0;this.hits=[];this.generation=0;this.cam={x:0,y:0};this.frames=0;this.lastFps=performance.now();this.fps=0;this.active=false;this.motionPreference=globalThis.matchMedia?.('(prefers-reduced-motion: reduce)');
+  this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas);
+  canvas.addEventListener('click',e=>{const r=canvas.getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;const candidates=this.hits.filter(h=>x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h);const hit=candidates.find(h=>h.kind==='player'&&h.id!==this.selfId)||candidates.find(h=>h.kind==='npc');if(hit)this.onPick(hit,e.clientX,e.clientY);});
+  canvas.addEventListener('mousemove',e=>{const r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;canvas.style.cursor=this.hits.some(h=>x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h&&!(h.kind==='player'&&h.id===this.selfId))?'pointer':'default';});
+  requestAnimationFrame(t=>this.frame(t));
+ }
+ resize(){const r=this.canvas.getBoundingClientRect();if(!r.width||!r.height)return;this.width=r.width;this.height=r.height;this.dpr=Math.min(window.devicePixelRatio||1,4);this.rootFont=parseFloat(getComputedStyle(document.documentElement).fontSize);this.canvas.width=Math.round(r.width*this.dpr);this.canvas.height=Math.round(r.height*this.dpr);this.scale=this.manualScale||Math.max(2,Math.min(6,Math.floor(r.height/195)));}
+ setScale(scale){this.manualScale=Math.max(1,Math.min(8,scale));this.resize();}
+ image(path){if(!path)return null;if(!this.images.has(path)){const image=new Image();image.src='assets/'+path;this.images.set(path,image);}const img=this.images.get(path);return img.complete&&img.naturalWidth?img:null;}
+ resetSession(){++this.generation;this.pendingMap=null;this.players.clear();this.cutTrees.clear();this.storyEvents.clear();this.itemPickups.clear();this.removedObjects.clear();this.fieldTiles={map:null,tiles:[]};this.objectMoves={};this.map=null;this.selfId=null;this.hits=[];this.active=false;}
+ // Owner snapshots replace this private set; shared map JSON is never mutated.
+ setCutTrees(cuts){
+  const next=new Map();
+  if(cuts&&typeof cuts==='object'&&!Array.isArray(cuts))for(const [map,ids] of Object.entries(cuts)){
+   if(Array.isArray(ids))next.set(map,new Set(ids.filter(id=>Number.isSafeInteger(id)&&id>=0&&id<=255)));
+  }
+  this.cutTrees=next;this.pruneHiddenObjectHits();
+ }
+ setStoryEvents(events){
+  this.storyEvents=new Set(Array.isArray(events)?events.filter(id=>typeof id==='string'&&id.length<=80):[]);this.pruneHiddenObjectHits();
+ }
+ setItemPickups(items){
+  this.itemPickups=new Set(Array.isArray(items)?items.filter(id=>typeof id==='string'&&id.length<=96):[]);this.pruneHiddenObjectHits();
+ }
+ setObjectMoves(objects){this.objectMoves=objects&&typeof objects==='object'&&!Array.isArray(objects)?objects:{};this.hits=this.hits.filter(h=>h.kind!=='npc');}
+ objectPosition(obj,mapId=this.map?.id){const p=this.objectMoves?.[mapId]?.[String(obj.id)];return obj.graphics===97&&p?.graphics===97&&Number.isSafeInteger(p.x)&&Number.isSafeInteger(p.y)?{...obj,x:p.x,y:p.y}:obj;}
+ setFieldTiles(map,tiles){
+  this.fieldTiles={map:typeof map==='string'?map:null,tiles:Array.isArray(tiles)?tiles.filter(t=>Number.isSafeInteger(t.x)&&Number.isSafeInteger(t.y)&&Number.isSafeInteger(t.metatile)):[]};
+ }
+ activeFieldTiles(){
+  return this.fieldTiles?.map===this.map?.id?this.fieldTiles.tiles.filter(t=>t.x>=0&&t.y>=0&&t.x<this.map.width&&t.y<this.map.height&&this.map.fieldTiles?.[t.metatile]):[];
+ }
+ setRemovedObjects(objects){
+  const next=new Map();
+  if(objects&&typeof objects==='object'&&!Array.isArray(objects))for(const [map,ids] of Object.entries(objects))if(Array.isArray(ids))next.set(map,new Set(ids.filter(id=>Number.isSafeInteger(id)&&id>=0&&id<=255)));
+  this.removedObjects=next;this.pruneHiddenObjectHits();
+ }
+ pruneHiddenObjectHits(){this.hits=this.hits.filter(hit=>hit.kind!=='npc'||!this.map||this.objectVisible(this.map.objects.find(n=>n.id===hit.id),hit.map||this.map.id));}
+ objectVisible(obj,mapId=this.map?.id){return !!obj&&!this.removedObjects.get(mapId)?.has(obj.id)&&!(obj.graphics===95&&this.cutTrees.get(mapId)?.has(obj.id))&&!(obj.storyEvent&&this.storyEvents.has(obj.storyEvent))&&!(obj.itemPickup&&this.itemPickups.has(obj.itemPickup));}
+ async loadMap(id,initialEntity=null){
+  const serial=++this.generation,pending={id,entities:new Map()};this.pendingMap=pending;this.players.clear();this.hits=[];
+  if(initialEntity?.map===id)pending.entities.set(initialEntity.id,{...initialEntity});
+  try{
+   const response=await fetch('assets/world/maps/'+encodeURIComponent(id)+'.json');if(!response.ok)throw Error('Map data is missing: '+id);
+   const map=await response.json();if(serial!==this.generation)return false;if(map.id!==id)throw Error('Map data does not match: '+id);
+   if(this.map){for(const path of [this.map.image,this.map.ground,this.map.overlay]){if(path&&![map.image,map.ground,map.overlay].includes(path))this.images.delete(path);}}
+   this.map=map;this.pendingMap=null;this.players.clear();for(const e of pending.entities.values())this.entity(e,true);
+   this.image(map.ground||map.image);this.image(map.overlay);for(const obj of map.objects)this.image(this.content.objects[id.split('_')[0]]?.[obj.graphics]?.image);return true;
+  }catch(error){if(serial!==this.generation)return false;this.pendingMap=null;this.map=null;this.players.clear();this.hits=[];throw error;}
+ }
+ entity(e,immediate=false){
+  // Scene deltas can arrive before local map assets. Fold them until this generation is ready.
+  if(this.pendingMap){if(e.map===this.pendingMap.id)this.pendingMap.entities.set(e.id,{...e});return;}
+  if(!this.map||e.map!==this.map.id)return;const old=this.players.get(e.id);const now=performance.now();const current=old?this.position(old,now):{x:e.x,y:e.y,fx:e.fx,fy:e.fy};this.players.set(e.id,{...e,fromX:immediate?e.x:current.x,fromY:immediate?e.y:current.y,fromFX:immediate?e.fx:current.fx,fromFY:immediate?e.fy:current.fy,at:now,moving:!immediate&&!!old&&(old.x!==e.x||old.y!==e.y)});this.image(this.content.objects.kanto[e.appearance]?.image);if(e.surf&&e.surfPokemon)this.image(frontSprite(this.content,e.surfPokemon).replace(/^assets\//,''));else if(e.follower)this.image(this.content.species[e.follower]?.icon);
+ }
+ scene(packet){const target=this.pendingMap?this.pendingMap.id:this.map?.id;if(packet.map!==target)return;for(const e of packet.players)this.entity(e);const players=this.pendingMap?this.pendingMap.entities:this.players;for(const id of packet.gone)players.delete(id);}
+ position(e,now){const t=Math.min(1,Math.max(0,(now-e.at)/140));return{x:e.fromX+(e.x-e.fromX)*t,y:e.fromY+(e.y-e.fromY)*t,fx:e.fromFX+(e.fx-e.fromFX)*t,fy:e.fromFY+(e.fy-e.fromFY)*t};}
+ drawSurfRider(entity,cx,feet,scale,now){
+  // A mount exists only for a server-confirmed surfer on this loaded map.
+  if(!entity.surf||entity.map!==this.map?.id)return false;
+  const ctx=this.ctx,partner=entity.surfPokemon,species=this.content.species[partner?.species],reduced=this.motionPreference?.matches===true;
+  const bob=reduced?0:Math.sin(now/420+(Number(entity.id)||0))*scale*.7,waterline=feet+2*scale;
+  ctx.save();ctx.fillStyle='#26678188';ctx.beginPath();ctx.ellipse(cx,waterline,11*scale,3.5*scale,0,0,Math.PI*2);ctx.fill();
+  // Two bounded rings produce a wake without particles, timers or world mutation.
+  for(let ring=0;ring<2;ring++){const phase=reduced?.35+ring*.35:((now/1350+ring*.5+(Number(entity.id)||0)*.13)%1);ctx.strokeStyle='#c7f4f6';ctx.globalAlpha=reduced?.5:.55*(1-phase);ctx.lineWidth=Math.max(1,scale*.55);ctx.beginPath();ctx.ellipse(cx,waterline,(9+phase*7)*scale,(2.5+phase*2)*scale,0,0,Math.PI*2);ctx.stroke();}ctx.restore();
+  const mountPath=frontSprite(this.content,partner).replace(/^assets\//,''),mount=species?this.image(mountPath):null;
+  if(mount){const size=40*scale,x=Math.round(cx-size/2),y=Math.round(feet-32*scale+bob);ctx.save();if(entity.direction==='right'){ctx.translate(Math.round(cx),0);ctx.scale(-1,1);ctx.drawImage(mount,-Math.round(size/2),y,size,size);}else ctx.drawImage(mount,x,y,size,size);ctx.restore();}
+  const rider=this.content.objects.kanto[entity.appearance]||this.content.objects.kanto['0'],image=this.image(rider?.image);
+  if(image&&rider){let frame=entity.direction==='up'?1:['left','right'].includes(entity.direction)?2:0;frame=Math.min(frame,rider.frames-1);const top=rider.visibleTop||0,cropHeight=Math.max(1,rider.height-top-5),width=rider.width*scale,height=cropHeight*scale,y=Math.round(feet-35*scale+bob);ctx.save();if(entity.direction==='right'){ctx.translate(Math.round(cx),0);ctx.scale(-1,1);ctx.drawImage(image,frame*rider.width,top,rider.width,cropHeight,-Math.round(width/2),y,width,height);}else ctx.drawImage(image,frame*rider.width,top,rider.width,cropHeight,Math.round(cx-width/2),y,width,height);ctx.restore();}
+  if(partner&&species)drawFollowerSparkles(ctx,this.content,{id:entity.id,follower:partner.species,followerVariety:partner.variety,shiny:partner.shiny},cx,feet+2*scale,scale,now,reduced);
+  this.hits.push({kind:'player',id:entity.id,map:this.map.id,x:Math.round(cx-20*scale),y:Math.round(feet-36*scale),w:40*scale,h:43*scale});return true;
+ }
+ frame(now){requestAnimationFrame(t=>this.frame(t));if(!this.active||!this.map||!this.width)return;this.frames++;if(now-this.lastFps>=1000){this.fps=Math.round(this.frames*1000/(now-this.lastFps));this.frames=0;this.lastFps=now;}
+  const ctx=this.ctx,w=this.width,h=this.height,s=this.scale,tile=16*s;ctx.setTransform(this.dpr,0,0,this.dpr,0,0);ctx.imageSmoothingEnabled=false;ctx.fillStyle='#22443f';ctx.fillRect(0,0,w,h);
+  const own=this.players.get(this.selfId),pos=own?this.position(own,now):{x:this.map.spawn[0],y:this.map.spawn[1]};const mw=this.map.width*tile,mh=this.map.height*tile;
+  const ox=Math.round(mw<w?(w-mw)/2:Math.max(w-mw,Math.min(0,w/2-(pos.x+.5)*tile)));const oy=Math.round(mh<h?(h-mh)/2:Math.max(h-mh,Math.min(0,h/2-(pos.y+.5)*tile)));this.cam={x:ox,y:oy};this.hits=[];
+  const ground=this.image(this.map.ground||this.map.image);if(ground)ctx.drawImage(ground,ox,oy,mw,mh);
+  const changedTiles=this.activeFieldTiles();
+  for(const t of changedTiles){const spec=this.map.fieldTiles[t.metatile],img=this.image(spec.ground||spec.image);if(img)ctx.drawImage(img,ox+t.x*tile,oy+t.y*tile,tile,tile);}
+  const drawables=[];const tag=this.map.id.split('_')[0];for(const original of this.map.objects){const n=this.objectPosition(original);if(!this.objectVisible(n))continue;const spec=this.content.objects[tag]?.[n.graphics];if(spec)drawables.push({kind:'npc',n,spec,x:n.x,y:n.y});}
+  for(const e of this.players.values()){const p=this.position(e,now);if(e.follower&&!e.surf)drawables.push({kind:'follower',e,x:p.fx,y:p.fy});drawables.push({kind:'player',e,x:p.x,y:p.y});}
+  drawables.sort((a,b)=>a.y-b.y||(a.kind==='follower'?-1:1));
+  for(const d of drawables){const cx=ox+(d.x+.5)*tile,feet=oy+(d.y+1)*tile;if(cx<-tile||cx>w+tile||feet<-tile||feet>h+tile*2)continue;
+   if(d.kind==='follower'){
+    const sp=this.content.species[d.e.follower],img=this.image(sp?.icon);if(!img)continue;const frame=Math.floor(now/260)%2;const size=32*s*.8;ctx.fillStyle='#15332d40';ctx.beginPath();ctx.ellipse(cx,feet-2*s,6*s,2*s,0,0,Math.PI*2);ctx.fill();ctx.drawImage(img,Math.min(frame*32,img.naturalWidth-32),0,32,32,Math.round(cx-size/2),Math.round(feet-size+2*s),Math.round(size),Math.round(size));drawFollowerSparkles(ctx,this.content,d.e,cx,feet,s,now,this.motionPreference?.matches===true);continue;
+   }
+   if(d.kind==='player'&&d.e.surf){this.drawSurfRider(d.e,cx,feet,s,now);continue;}
+   const spec=d.kind==='npc'?d.spec:this.content.objects.kanto[d.e.appearance]||this.content.objects.kanto['0'];const img=this.image(spec.image);if(!img)continue;
+   const moving=d.kind==='player'&&d.e.moving&&now-d.e.at<175;const direction=d.kind==='player'?d.e.direction:'down';let frame=direction==='up'?1:direction==='left'||direction==='right'?2:0;if(moving)frame=(direction==='up'?5:direction==='left'||direction==='right'?7:3)+(Math.floor(now/120)%2);frame=Math.min(frame,spec.frames-1);
+   const sw=spec.width*s,sh=spec.height*s,x=Math.round(cx-sw/2),y=Math.round(feet-sh);ctx.fillStyle='#11261f45';ctx.beginPath();ctx.ellipse(cx,feet-2*s,6*s,2*s,0,0,Math.PI*2);ctx.fill();
+   ctx.save();if(direction==='right'){ctx.translate(Math.round(cx),0);ctx.scale(-1,1);ctx.drawImage(img,frame*spec.width,0,spec.width,spec.height,-Math.round(sw/2),y,sw,sh);}else ctx.drawImage(img,frame*spec.width,0,spec.width,spec.height,x,y,sw,sh);ctx.restore();
+   // Autonomous trainers visibly pause for their server-resolved wild battles.
+   // The small GBA-style alert bubble uses canvas primitives only, so no new
+   // artwork or scaled UI assets are introduced into the pixel world.
+   if(d.kind==='player'&&d.e.autonomous&&d.e.fieldAction==='wild_battle'){const bs=Math.max(12,5*s),bx=Math.round(cx+sw*.28),by=Math.round(y-bs*.65);ctx.save();ctx.fillStyle='#fff7c7';ctx.strokeStyle='#24372c';ctx.lineWidth=Math.max(2,s);ctx.beginPath();ctx.roundRect(bx-bs/2,by-bs/2,bs,bs,Math.max(2,s));ctx.fill();ctx.stroke();ctx.fillStyle='#263126';ctx.font='bold '+Math.max(10,4*s)+'px monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('!',bx,by+1);ctx.restore();}
+   this.hits.push({kind:d.kind,id:d.kind==='npc'?d.n.id:d.e.id,map:this.map.id,x,y,w:sw,h:sh});
+   if(d.kind==='npc'&&d.n.trainerType){ctx.font='bold '+Math.max(12,s*5)+'px Segoe UI';ctx.textAlign='center';ctx.fillStyle='#fff2b0';ctx.strokeStyle='#263126';ctx.lineWidth=3;ctx.strokeText('!',cx,y-3);ctx.fillText('!',cx,y-3);}
+  }
+  const overlay=this.image(this.map.overlay);
+  if(overlay){
+   // Mask immutable upper tiles where the server selected another native
+   // metatile. New upper layers are then drawn after actors, preserving depth.
+   if(changedTiles.length){ctx.save();ctx.beginPath();ctx.rect(ox,oy,mw,mh);for(const t of changedTiles)ctx.rect(ox+t.x*tile,oy+t.y*tile,tile,tile);ctx.clip('evenodd');}
+   ctx.drawImage(overlay,ox,oy,mw,mh);if(changedTiles.length)ctx.restore();
+  }
+  for(const t of changedTiles){const img=this.image(this.map.fieldTiles[t.metatile].overlay);if(img)ctx.drawImage(img,ox+t.x*tile,oy+t.y*tile,tile,tile);}
+  // Nameplates are a UI layer, never blurred along with world pixels.
+  const rootFont=this.rootFont;const fs=Math.max(11,rootFont*.76);ctx.font='600 '+fs+'px "Segoe UI",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  for(const e of this.players.values()){const p=this.position(e,now);const spec=this.content.objects.kanto[e.appearance]||this.content.objects.kanto['0'];const x=ox+(p.x+.5)*tile,y=oy+(p.y+1)*tile-(e.surf?36:spec.height-(spec.visibleTop||0))*s-fs*.95;const label=e.username+(e.busy?' ···':'');const tw=ctx.measureText(label).width+14;ctx.fillStyle=e.id===this.selfId?'#0c2c24e8':'#071523e6';ctx.beginPath();ctx.roundRect(x-tw/2,y-fs*.7,tw,fs*1.45,4);ctx.fill();ctx.fillStyle=e.id===this.selfId?'#adf0cf':'#f1f5fa';ctx.fillText(label,x,y);this.hits.push({kind:'player',id:e.id,x:x-tw/2,y:y-fs*.7,w:tw,h:fs*1.45});}
+ }
+}

@@ -1,0 +1,2071 @@
+{
+  "format": 1,
+  "version": "0.6.12-alpha",
+  "pack": "ed3bbfd4c3c26dff1a57e2de",
+  "sourceSha256": "729041b940afe031302d630fdbe57c0c145f3f7b6d9b8eca5e98678d0ca4d059",
+  "checks": "passed",
+  "mapsAudited": 425,
+  "nativeInventoryRecords": 299,
+  "inventoryPockets": {
+    "berries": 43,
+    "items": 139,
+    "key-items": 55,
+    "poke-balls": 12,
+    "tm-hm": 50
+  },
+  "nativeIcons": 299,
+  "iconDigest": "110f14897dd388d2aa3593d84a5c3af633b29182bf645b4aa9e6cd68297db270",
+  "machines": 50,
+  "compatibilityProfiles": 386,
+  "visiblePickups": 167,
+  "hiddenItemCaches": 171,
+  "hiddenCoinCaches": 12,
+  "underfootItemfinderCaches": 6,
+  "ballActorsAccountedFor": 178,
+  "ballActorExceptions": [
+    {
+      "id": "kanto_10_11:2",
+      "map": "kanto_10_11",
+      "npc": 2,
+      "source": "kanto",
+      "x": 7,
+      "y": 3,
+      "graphics": 92,
+      "sourceObjectIndex": 1,
+      "sourceLocalId": 2,
+      "sourceObjectOffset": "0x3bb788",
+      "sourceScript": "0x16c4e5",
+      "sourceFlag": 87,
+      "elevation": 0,
+      "reason": "Eevee gift actor; not an inventory item"
+    },
+    {
+      "id": "kanto_14_2:6",
+      "map": "kanto_14_2",
+      "npc": 6,
+      "source": "kanto",
+      "x": 5,
+      "y": 3,
+      "graphics": 92,
+      "sourceObjectIndex": 5,
+      "sourceLocalId": 6,
+      "sourceObjectOffset": "0x3bcd38",
+      "sourceScript": "0x16ec78",
+      "sourceFlag": 96,
+      "elevation": 3,
+      "reason": "Fighting Dojo Pokemon choice actor; not an inventory item"
+    },
+    {
+      "id": "kanto_14_2:7",
+      "map": "kanto_14_2",
+      "npc": 7,
+      "source": "kanto",
+      "x": 7,
+      "y": 3,
+      "graphics": 92,
+      "sourceObjectIndex": 6,
+      "sourceLocalId": 7,
+      "sourceObjectOffset": "0x3bcd50",
+      "sourceScript": "0x16ecbe",
+      "sourceFlag": 97,
+      "elevation": 3,
+      "reason": "Fighting Dojo Pokemon choice actor; not an inventory item"
+    },
+    {
+      "id": "kanto_1_111:2",
+      "map": "kanto_1_111",
+      "npc": 2,
+      "source": "kanto",
+      "x": 12,
+      "y": 16,
+      "graphics": 92,
+      "sourceObjectIndex": 1,
+      "sourceLocalId": 2,
+      "sourceObjectOffset": "0x3b34d4",
+      "sourceScript": "0x1bedd3",
+      "sourceFlag": 497,
+      "elevation": 3,
+      "sourceItemId": 345,
+      "reason": "HM excluded by requested scope"
+    },
+    {
+      "id": "kanto_1_45:2",
+      "map": "kanto_1_45",
+      "npc": 2,
+      "source": "kanto",
+      "x": 20,
+      "y": 5,
+      "graphics": 92,
+      "sourceObjectIndex": 1,
+      "sourceLocalId": 2,
+      "sourceObjectOffset": "0x3afbd0",
+      "sourceScript": "0x1613db",
+      "sourceFlag": 55,
+      "elevation": 3,
+      "reason": "Silph Scope story grant; handled by audited gift service"
+    },
+    {
+      "id": "kanto_1_45:4",
+      "map": "kanto_1_45",
+      "npc": 4,
+      "source": "kanto",
+      "x": 3,
+      "y": 2,
+      "graphics": 92,
+      "sourceObjectIndex": 3,
+      "sourceLocalId": 4,
+      "sourceObjectOffset": "0x3afc00",
+      "sourceScript": "0x161425",
+      "sourceFlag": 54,
+      "elevation": 3,
+      "reason": "Lift Key story grant; handled by audited gift service"
+    },
+    {
+      "id": "kanto_1_95:7",
+      "map": "kanto_1_95",
+      "npc": 7,
+      "source": "kanto",
+      "x": 36,
+      "y": 5,
+      "graphics": 92,
+      "sourceObjectIndex": 6,
+      "sourceLocalId": 7,
+      "sourceObjectOffset": "0x3b285c",
+      "sourceScript": "0x163905",
+      "sourceFlag": 134,
+      "elevation": 3,
+      "reason": "Power Plant scripted wild Pokemon decoy; not an inventory item"
+    },
+    {
+      "id": "kanto_1_95:8",
+      "map": "kanto_1_95",
+      "npc": 8,
+      "source": "kanto",
+      "x": 30,
+      "y": 38,
+      "graphics": 92,
+      "sourceObjectIndex": 7,
+      "sourceLocalId": 8,
+      "sourceObjectOffset": "0x3b2874",
+      "sourceScript": "0x1638a7",
+      "sourceFlag": 133,
+      "elevation": 3,
+      "reason": "Power Plant scripted wild Pokemon decoy; not an inventory item"
+    },
+    {
+      "id": "kanto_4_3:5",
+      "map": "kanto_4_3",
+      "npc": 5,
+      "source": "kanto",
+      "x": 8,
+      "y": 4,
+      "graphics": 92,
+      "sourceObjectIndex": 4,
+      "sourceLocalId": 5,
+      "sourceObjectOffset": "0x3b98f0",
+      "sourceScript": "0x169c23",
+      "sourceFlag": 40,
+      "elevation": 0,
+      "reason": "Oak starter Pokemon choice actor; not an inventory item"
+    },
+    {
+      "id": "kanto_4_3:6",
+      "map": "kanto_4_3",
+      "npc": 6,
+      "source": "kanto",
+      "x": 9,
+      "y": 4,
+      "graphics": 92,
+      "sourceObjectIndex": 5,
+      "sourceLocalId": 6,
+      "sourceObjectOffset": "0x3b9908",
+      "sourceScript": "0x169df0",
+      "sourceFlag": 41,
+      "elevation": 0,
+      "reason": "Oak starter Pokemon choice actor; not an inventory item"
+    },
+    {
+      "id": "kanto_4_3:7",
+      "map": "kanto_4_3",
+      "npc": 7,
+      "source": "kanto",
+      "x": 10,
+      "y": 4,
+      "graphics": 92,
+      "sourceObjectIndex": 6,
+      "sourceLocalId": 7,
+      "sourceObjectOffset": "0x3b9920",
+      "sourceScript": "0x169e26",
+      "sourceFlag": 42,
+      "elevation": 0,
+      "reason": "Oak starter Pokemon choice actor; not an inventory item"
+    }
+  ],
+  "nativeMartClerks": 20,
+  "nativeFieldStateGraphics": {
+    "maps": 15,
+    "metatiles": 102,
+    "groundImages": 102,
+    "overlayImages": 0
+  },
+  "scriptAudit": {
+    "maps": 425,
+    "objectsScanned": 1620,
+    "objectsWithoutScript": 55,
+    "ordinaryItemBallsOwnedByPickupExtractor": 167,
+    "candidatePaths": 125,
+    "objectsWithCandidateGrants": 49,
+    "uniqueSourceItems": 70,
+    "marts": 20
+  },
+  "giftRuntime": {
+    "enabledGifts": 52,
+    "storyAdapters": [
+      {
+        "id": "kanto_gift:kanto_1_102:1:373",
+        "map": "kanto_1_102",
+        "npc": 1,
+        "sourceItemId": 373,
+        "item": "fr_ruby",
+        "quantity": 1,
+        "sourceCommand": "0x163cc9",
+        "name": "Ruby",
+        "sourceFlags": [
+          733
+        ],
+        "badge": "kanto_8",
+        "adaptation": "The Earth Badge gates the Ruby while NXT lacks the native postgame Celio scene."
+      },
+      {
+        "id": "kanto_gift:kanto_1_109:1:147",
+        "map": "kanto_1_109",
+        "npc": 1,
+        "sourceItemId": 147,
+        "item": "fr_iapapaberry",
+        "quantity": 1,
+        "sourceCommand": "0x163d5f",
+        "name": "Iapapa Berry",
+        "sourceFlags": [
+          122,
+          675
+        ],
+        "badge": "kanto_7",
+        "group": "lostelle_rescue",
+        "adaptation": "The Volcano Badge and reaching Lostelle replace the unavailable Berry Forest rescue battle scene."
+      },
+      {
+        "id": "kanto_gift:kanto_1_3:1:358",
+        "map": "kanto_1_3",
+        "npc": 1,
+        "sourceItemId": 358,
+        "item": "fr_domefossil",
+        "quantity": 1,
+        "sourceCommand": "0x1607ab",
+        "name": "Dome Fossil",
+        "sourceFlags": [
+          562,
+          626
+        ],
+        "badge": "kanto_1",
+        "group": "mt_moon_fossil",
+        "adaptation": "NXT replaces the unbound fossil Super Nerd scene with the Boulder Badge; choose exactly one fossil."
+      },
+      {
+        "id": "kanto_gift:kanto_1_3:2:357",
+        "map": "kanto_1_3",
+        "npc": 2,
+        "sourceItemId": 357,
+        "item": "fr_helixfossil",
+        "quantity": 1,
+        "sourceCommand": "0x16080f",
+        "name": "Helix Fossil",
+        "sourceFlags": [
+          562,
+          627
+        ],
+        "badge": "kanto_1",
+        "group": "mt_moon_fossil",
+        "adaptation": "NXT replaces the unbound fossil Super Nerd scene with the Boulder Badge; choose exactly one fossil."
+      },
+      {
+        "id": "kanto_gift:kanto_1_45:2:359",
+        "map": "kanto_1_45",
+        "npc": 2,
+        "sourceItemId": 359,
+        "item": "fr_silphscope",
+        "quantity": 1,
+        "sourceCommand": "0x1613ea",
+        "name": "Silph Scope",
+        "sourceFlags": [],
+        "trainers": [
+          "kanto_1_45:1"
+        ],
+        "adaptation": "NXT uses the recorded Hideout Giovanni victory to reveal the Silph Scope."
+      },
+      {
+        "id": "kanto_gift:kanto_1_45:4:356",
+        "map": "kanto_1_45",
+        "npc": 4,
+        "sourceItemId": 356,
+        "item": "fr_liftkey",
+        "quantity": 1,
+        "sourceCommand": "0x161437",
+        "name": "Lift Key",
+        "sourceFlags": [
+          677
+        ],
+        "trainers": [
+          "kanto_1_45:3"
+        ],
+        "adaptation": "NXT uses the nearby key-dropping Rocket's recorded victory instead of its dropped-object cutscene."
+      },
+      {
+        "id": "kanto_gift:kanto_1_57:1:1",
+        "map": "kanto_1_57",
+        "npc": 1,
+        "sourceItemId": 1,
+        "item": "fr_masterball",
+        "quantity": 1,
+        "sourceCommand": "0x161ea8",
+        "name": "Master Ball",
+        "sourceFlags": [
+          592
+        ],
+        "requiredItems": {
+          "355": 1
+        },
+        "badge": "kanto_6",
+        "adaptation": "Card Key possession and the Marsh Badge replace the unbound Silph president rescue scene."
+      },
+      {
+        "id": "kanto_gift:kanto_2_34:1:110",
+        "map": "kanto_2_34",
+        "npc": 1,
+        "sourceItemId": 110,
+        "item": "fr_nugget",
+        "quantity": 1,
+        "sourceCommand": "0x164e1a",
+        "name": "Nugget",
+        "sourceFlags": [
+          738
+        ],
+        "badge": "kanto_8",
+        "adaptation": "The Earth Badge replaces the native National Pokédex special for this once-only Nugget."
+      },
+      {
+        "id": "kanto_gift:kanto_30_0:1:265",
+        "map": "kanto_30_0",
+        "npc": 1,
+        "sourceItemId": 265,
+        "item": "fr_ssticket",
+        "quantity": 1,
+        "sourceCommand": "0x1706f6",
+        "name": "S.S. Ticket",
+        "sourceFlags": [
+          49,
+          564,
+          565,
+          2100
+        ],
+        "badge": "kanto_2",
+        "group": "bill_ticket",
+        "adaptation": "The Cascade Badge replaces Bill's unavailable transformation cutscene in NXT."
+      },
+      {
+        "id": "kanto_gift:kanto_30_0:2:265",
+        "map": "kanto_30_0",
+        "npc": 2,
+        "sourceItemId": 265,
+        "item": "fr_ssticket",
+        "quantity": 1,
+        "sourceCommand": "0x1706f6",
+        "name": "S.S. Ticket",
+        "sourceFlags": [
+          49,
+          564,
+          565,
+          2100
+        ],
+        "badge": "kanto_2",
+        "group": "bill_ticket",
+        "adaptation": "Both native Bill objects share one ticket receipt; Cascade Badge replaces his unavailable cutscene."
+      },
+      {
+        "id": "kanto_gift:kanto_32_0:3:280",
+        "map": "kanto_32_0",
+        "npc": 3,
+        "sourceItemId": 280,
+        "item": "fr_meteorite",
+        "quantity": 1,
+        "sourceCommand": "0x170e31",
+        "name": "Meteorite",
+        "sourceFlags": [
+          57,
+          2113,
+          2117
+        ],
+        "badge": "kanto_7",
+        "adaptation": "Celio gives the native arrival-scene Meteorite when spoken to after earning the Volcano Badge."
+      },
+      {
+        "id": "kanto_gift:kanto_32_0:3:361",
+        "map": "kanto_32_0",
+        "npc": 3,
+        "sourceItemId": 361,
+        "item": "fr_townmap",
+        "quantity": 1,
+        "sourceCommand": "0x170ed8",
+        "name": "Town Map",
+        "sourceFlags": [
+          57,
+          2113,
+          2117
+        ],
+        "badge": "kanto_7",
+        "group": "town_map",
+        "adaptation": "Celio's native backup Town Map shares Daisy's permanent receipt."
+      },
+      {
+        "id": "kanto_gift:kanto_32_0:3:367",
+        "map": "kanto_32_0",
+        "npc": 3,
+        "sourceItemId": 367,
+        "item": "fr_tripass",
+        "quantity": 1,
+        "sourceCommand": "0x170e48",
+        "name": "Tri-Pass",
+        "sourceFlags": [
+          57,
+          2113,
+          2117
+        ],
+        "badge": "kanto_7",
+        "adaptation": "Celio gives the native arrival-scene Tri-Pass when spoken to after earning the Volcano Badge."
+      },
+      {
+        "id": "kanto_gift:kanto_32_0:3:368",
+        "map": "kanto_32_0",
+        "npc": 3,
+        "sourceItemId": 368,
+        "item": "fr_rainbowpass",
+        "quantity": 1,
+        "sourceCommand": "0x171141",
+        "name": "Rainbow Pass",
+        "sourceFlags": [
+          2118
+        ],
+        "consumeItems": {
+          "373": 1,
+          "367": 1
+        },
+        "adaptation": "Celio directly exchanges Ruby and Tri-Pass for Rainbow Pass; native dialogue branches are replaced."
+      },
+      {
+        "id": "kanto_gift:kanto_33_0:1:94",
+        "map": "kanto_33_0",
+        "npc": 1,
+        "sourceItemId": 94,
+        "item": "fr_moonstone",
+        "quantity": 1,
+        "sourceCommand": "0x17164c",
+        "name": "Moon Stone",
+        "sourceFlags": [
+          763
+        ],
+        "requiredGiftGroup": "lostelle_rescue",
+        "consumeItems": {
+          "280": 1
+        },
+        "adaptation": "A saved Lostelle gift receipt and Meteorite delivery replace the Two Island rescue scene variables."
+      },
+      {
+        "id": "kanto_gift:kanto_3_1:4:366",
+        "map": "kanto_3_1",
+        "npc": 4,
+        "sourceItemId": 366,
+        "item": "fr_teachytv",
+        "quantity": 1,
+        "sourceCommand": "0x165bfb",
+        "name": "Teachy Tv",
+        "sourceFlags": [],
+        "adaptation": "The NXT interaction replaces the old man's catching demonstration with an explicit Teachy TV gift."
+      },
+      {
+        "id": "kanto_gift:kanto_3_14:1:19",
+        "map": "kanto_3_14",
+        "npc": 1,
+        "sourceItemId": 19,
+        "item": "fr_fullrestore",
+        "quantity": 1,
+        "sourceCommand": "0x1678cb",
+        "name": "Full Restore",
+        "sourceFlags": [
+          764
+        ],
+        "requiredGiftGroup": "lostelle_rescue",
+        "adaptation": "The saved Lostelle rescue receipt replaces the unavailable biker-scene completion variable."
+      },
+      {
+        "id": "kanto_gift:kanto_3_3:2:316",
+        "map": "kanto_3_3",
+        "npc": 2,
+        "sourceItemId": 316,
+        "item": "fr_tm28",
+        "quantity": 1,
+        "sourceCommand": "0x1666be",
+        "name": "TM28",
+        "sourceFlags": [
+          575
+        ],
+        "badge": "kanto_2",
+        "adaptation": "The Cascade Badge replaces the native burglar battle, which has no trainer binding in this NXT baseline."
+      },
+      {
+        "id": "kanto_gift:kanto_3_43:1:110",
+        "map": "kanto_3_43",
+        "npc": 1,
+        "sourceItemId": 110,
+        "item": "fr_nugget",
+        "quantity": 1,
+        "sourceCommand": "0x168731",
+        "name": "Nugget",
+        "sourceFlags": [],
+        "trainers": [
+          "kanto_3_43:2",
+          "kanto_3_43:3",
+          "kanto_3_43:4",
+          "kanto_3_43:5",
+          "kanto_3_43:6"
+        ],
+        "adaptation": "NXT awards the Nugget once the five native bridge trainers have recorded victories."
+      },
+      {
+        "id": "kanto_gift:kanto_3_57:1:330",
+        "map": "kanto_3_57",
+        "npc": 1,
+        "sourceItemId": 330,
+        "item": "fr_tm42",
+        "quantity": 1,
+        "sourceCommand": "0x168aac",
+        "name": "TM42",
+        "sourceFlags": [
+          566
+        ],
+        "consumeItems": {
+          "28": 1
+        },
+        "adaptation": "Offer Lemonade through this NPC interaction; the native memorial background event is not an NPC script."
+      },
+      {
+        "id": "kanto_gift:kanto_4_2:1:361",
+        "map": "kanto_4_2",
+        "npc": 1,
+        "sourceItemId": 361,
+        "item": "fr_townmap",
+        "quantity": 1,
+        "sourceCommand": "0x168fa9",
+        "name": "Town Map",
+        "sourceFlags": [],
+        "group": "town_map",
+        "adaptation": "NXT characters already begin with a starter and Pokédex; Daisy's opening-story requirement is complete."
+      },
+      {
+        "id": "kanto_gift:kanto_5_3:1:349",
+        "map": "kanto_5_3",
+        "npc": 1,
+        "sourceItemId": 349,
+        "item": "fr_oaksparcel",
+        "quantity": 1,
+        "sourceCommand": "0x16a2b1",
+        "name": "Oak’S Parcel",
+        "sourceFlags": [],
+        "adaptation": "Speak to the Viridian clerk to receive the Parcel from the native shop-entry scene."
+      },
+      {
+        "id": "kanto_gift:kanto_8_2:1:350",
+        "map": "kanto_8_2",
+        "npc": 1,
+        "sourceItemId": 350,
+        "item": "fr_pokeflute",
+        "quantity": 1,
+        "sourceCommand": "0x16b1e8",
+        "name": "Poké Flute",
+        "sourceFlags": [
+          573
+        ],
+        "requiredItems": {
+          "359": 1
+        },
+        "badge": "kanto_3",
+        "adaptation": "Silph Scope possession and the Thunder Badge replace the unavailable Mr. Fuji rescue cutscene."
+      }
+    ],
+    "excludedAcquisitions": [
+      {
+        "map": "kanto_10_15",
+        "npc": 4,
+        "sourceItemId": 301,
+        "reason": "Dedicated native Game Corner coin-prize service; spends the extracted coin price."
+      },
+      {
+        "map": "kanto_10_15",
+        "npc": 4,
+        "sourceItemId": 311,
+        "reason": "Dedicated native Game Corner coin-prize service; spends the extracted coin price."
+      },
+      {
+        "map": "kanto_10_15",
+        "npc": 4,
+        "sourceItemId": 312,
+        "reason": "Dedicated native Game Corner coin-prize service; spends the extracted coin price."
+      },
+      {
+        "map": "kanto_10_15",
+        "npc": 4,
+        "sourceItemId": 318,
+        "reason": "Dedicated native Game Corner coin-prize service; spends the extracted coin price."
+      },
+      {
+        "map": "kanto_10_15",
+        "npc": 4,
+        "sourceItemId": 323,
+        "reason": "Dedicated native Game Corner coin-prize service; spends the extracted coin price."
+      },
+      {
+        "map": "kanto_10_15",
+        "npc": 5,
+        "sourceItemId": 40,
+        "reason": "Dedicated native Game Corner coin-prize service; spends the extracted coin price."
+      },
+      {
+        "map": "kanto_10_15",
+        "npc": 5,
+        "sourceItemId": 194,
+        "reason": "Dedicated native Game Corner coin-prize service; spends the extracted coin price."
+      },
+      {
+        "map": "kanto_10_15",
+        "npc": 5,
+        "sourceItemId": 205,
+        "reason": "Dedicated native Game Corner coin-prize service; spends the extracted coin price."
+      },
+      {
+        "map": "kanto_10_15",
+        "npc": 5,
+        "sourceItemId": 209,
+        "reason": "Dedicated native Game Corner coin-prize service; spends the extracted coin price."
+      },
+      {
+        "map": "kanto_10_15",
+        "npc": 5,
+        "sourceItemId": 215,
+        "reason": "Dedicated native Game Corner coin-prize service; spends the extracted coin price."
+      },
+      {
+        "map": "kanto_7_9",
+        "npc": 1,
+        "sourceItemId": 30,
+        "reason": "Dedicated native Berry Powder exchange service; spends the extracted powder price."
+      },
+      {
+        "map": "kanto_7_9",
+        "npc": 1,
+        "sourceItemId": 31,
+        "reason": "Dedicated native Berry Powder exchange service; spends the extracted powder price."
+      },
+      {
+        "map": "kanto_7_9",
+        "npc": 1,
+        "sourceItemId": 32,
+        "reason": "Dedicated native Berry Powder exchange service; spends the extracted powder price."
+      },
+      {
+        "map": "kanto_7_9",
+        "npc": 1,
+        "sourceItemId": 33,
+        "reason": "Dedicated native Berry Powder exchange service; spends the extracted powder price."
+      },
+      {
+        "map": "kanto_7_9",
+        "npc": 1,
+        "sourceItemId": 63,
+        "reason": "Dedicated native Berry Powder exchange service; spends the extracted powder price."
+      },
+      {
+        "map": "kanto_7_9",
+        "npc": 1,
+        "sourceItemId": 64,
+        "reason": "Dedicated native Berry Powder exchange service; spends the extracted powder price."
+      },
+      {
+        "map": "kanto_7_9",
+        "npc": 1,
+        "sourceItemId": 65,
+        "reason": "Dedicated native Berry Powder exchange service; spends the extracted powder price."
+      },
+      {
+        "map": "kanto_7_9",
+        "npc": 1,
+        "sourceItemId": 66,
+        "reason": "Dedicated native Berry Powder exchange service; spends the extracted powder price."
+      },
+      {
+        "map": "kanto_7_9",
+        "npc": 1,
+        "sourceItemId": 67,
+        "reason": "Dedicated native Berry Powder exchange service; spends the extracted powder price."
+      },
+      {
+        "map": "kanto_7_9",
+        "npc": 1,
+        "sourceItemId": 69,
+        "reason": "Dedicated native Berry Powder exchange service; spends the extracted powder price."
+      },
+      {
+        "map": "kanto_7_9",
+        "npc": 1,
+        "sourceItemId": 70,
+        "reason": "Dedicated native Berry Powder exchange service; spends the extracted powder price."
+      }
+    ]
+  },
+  "acquisitionEvidence": {
+    "fr_amuletcoin": [
+      "audited-script-candidate"
+    ],
+    "fr_antidote": [
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_aspearberry": [
+      "hidden-field",
+      "native-held-species"
+    ],
+    "fr_awakening": [
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_berryjuice": [
+      "native-held-species"
+    ],
+    "fr_bicycle": [
+      "audited-script-candidate"
+    ],
+    "fr_bigmushroom": [
+      "hidden-field",
+      "native-held-species"
+    ],
+    "fr_bigpearl": [
+      "hidden-field",
+      "native-held-species",
+      "visible-field"
+    ],
+    "fr_bikevoucher": [
+      "audited-script-candidate"
+    ],
+    "fr_blackglasses": [
+      "visible-field"
+    ],
+    "fr_blueshard": [
+      "native-held-species"
+    ],
+    "fr_blukberry": [
+      "hidden-field"
+    ],
+    "fr_burnheal": [
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_calcium": [
+      "audited-script-candidate",
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_carbos": [
+      "audited-script-candidate",
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_cardkey": [
+      "visible-field"
+    ],
+    "fr_charcoal": [
+      "audited-script-candidate"
+    ],
+    "fr_cheriberry": [
+      "hidden-field"
+    ],
+    "fr_chestoberry": [
+      "hidden-field",
+      "native-held-species"
+    ],
+    "fr_cleansetag": [
+      "visible-field"
+    ],
+    "fr_coincase": [
+      "audited-script-candidate"
+    ],
+    "fr_direhit": [
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_domefossil": [
+      "audited-script-candidate"
+    ],
+    "fr_dragonfang": [
+      "native-held-species"
+    ],
+    "fr_dragonscale": [
+      "native-held-species",
+      "visible-field"
+    ],
+    "fr_dreammail": [
+      "native-mart"
+    ],
+    "fr_elixir": [
+      "hidden-field",
+      "visible-field"
+    ],
+    "fr_energypowder": [
+      "audited-script-candidate"
+    ],
+    "fr_energyroot": [
+      "audited-script-candidate"
+    ],
+    "fr_escaperope": [
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_ether": [
+      "hidden-field",
+      "visible-field"
+    ],
+    "fr_everstone": [
+      "audited-script-candidate"
+    ],
+    "fr_expshare": [
+      "audited-script-candidate"
+    ],
+    "fr_firestone": [
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_focusband": [
+      "native-held-species"
+    ],
+    "fr_freshwater": [
+      "native-mart"
+    ],
+    "fr_fullheal": [
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_fullrestore": [
+      "audited-script-candidate",
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_goldteeth": [
+      "visible-field"
+    ],
+    "fr_goodrod": [
+      "audited-script-candidate"
+    ],
+    "fr_greatball": [
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_greenshard": [
+      "native-held-species"
+    ],
+    "fr_guardspec": [
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_hardstone": [
+      "native-held-species"
+    ],
+    "fr_healpowder": [
+      "audited-script-candidate"
+    ],
+    "fr_heartscale": [
+      "hidden-field",
+      "native-held-species"
+    ],
+    "fr_helixfossil": [
+      "audited-script-candidate"
+    ],
+    "fr_hpup": [
+      "audited-script-candidate",
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_hyperpotion": [
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_iapapaberry": [
+      "audited-script-candidate"
+    ],
+    "fr_iceheal": [
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_iron": [
+      "audited-script-candidate",
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_itemfinder": [
+      "audited-script-candidate"
+    ],
+    "fr_kingsrock": [
+      "native-held-species",
+      "visible-field"
+    ],
+    "fr_lavacookie": [
+      "hidden-field",
+      "native-mart"
+    ],
+    "fr_laxincense": [
+      "visible-field"
+    ],
+    "fr_leafstone": [
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_leftovers": [
+      "hidden-field"
+    ],
+    "fr_lemonade": [
+      "native-mart"
+    ],
+    "fr_leppaberry": [
+      "hidden-field",
+      "native-held-species"
+    ],
+    "fr_liftkey": [
+      "audited-script-candidate"
+    ],
+    "fr_luckyegg": [
+      "native-held-species"
+    ],
+    "fr_luckypunch": [
+      "visible-field"
+    ],
+    "fr_lumberry": [
+      "hidden-field",
+      "native-held-species"
+    ],
+    "fr_machobrace": [
+      "hidden-field"
+    ],
+    "fr_magnet": [
+      "native-held-species"
+    ],
+    "fr_masterball": [
+      "audited-script-candidate"
+    ],
+    "fr_maxelixir": [
+      "hidden-field",
+      "visible-field"
+    ],
+    "fr_maxether": [
+      "hidden-field",
+      "visible-field"
+    ],
+    "fr_maxpotion": [
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_maxrepel": [
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_maxrevive": [
+      "hidden-field",
+      "visible-field"
+    ],
+    "fr_metalcoat": [
+      "native-held-species",
+      "visible-field"
+    ],
+    "fr_metalpowder": [
+      "native-held-species"
+    ],
+    "fr_meteorite": [
+      "audited-script-candidate"
+    ],
+    "fr_miracleseed": [
+      "audited-script-candidate"
+    ],
+    "fr_moomoomilk": [
+      "native-held-species",
+      "native-mart"
+    ],
+    "fr_moonstone": [
+      "audited-script-candidate",
+      "hidden-field",
+      "native-held-species",
+      "visible-field"
+    ],
+    "fr_mysticwater": [
+      "audited-script-candidate",
+      "native-held-species"
+    ],
+    "fr_nanabberry": [
+      "hidden-field"
+    ],
+    "fr_nestball": [
+      "hidden-field"
+    ],
+    "fr_netball": [
+      "hidden-field"
+    ],
+    "fr_nevermeltice": [
+      "native-held-species",
+      "visible-field"
+    ],
+    "fr_nugget": [
+      "audited-script-candidate",
+      "hidden-field",
+      "native-held-species",
+      "visible-field"
+    ],
+    "fr_oaksparcel": [
+      "audited-script-candidate"
+    ],
+    "fr_oldamber": [
+      "audited-script-candidate"
+    ],
+    "fr_oldrod": [
+      "audited-script-candidate"
+    ],
+    "fr_oranberry": [
+      "hidden-field",
+      "native-held-species"
+    ],
+    "fr_parlyzheal": [
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_pearl": [
+      "hidden-field",
+      "native-held-species",
+      "visible-field"
+    ],
+    "fr_pechaberry": [
+      "hidden-field",
+      "native-held-species"
+    ],
+    "fr_persimberry": [
+      "hidden-field",
+      "native-held-species"
+    ],
+    "fr_pinapberry": [
+      "hidden-field"
+    ],
+    "fr_poisonbarb": [
+      "native-held-species"
+    ],
+    "fr_pokeball": [
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_pokedoll": [
+      "native-mart"
+    ],
+    "fr_pokeflute": [
+      "audited-script-candidate"
+    ],
+    "fr_potion": [
+      "audited-script-candidate",
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_powderjar": [
+      "audited-script-candidate"
+    ],
+    "fr_ppmax": [
+      "hidden-field"
+    ],
+    "fr_ppup": [
+      "audited-script-candidate",
+      "hidden-field",
+      "visible-field"
+    ],
+    "fr_protein": [
+      "audited-script-candidate",
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_quickclaw": [
+      "visible-field"
+    ],
+    "fr_rainbowpass": [
+      "audited-script-candidate"
+    ],
+    "fr_rarecandy": [
+      "hidden-field",
+      "visible-field"
+    ],
+    "fr_rawstberry": [
+      "hidden-field",
+      "native-held-species"
+    ],
+    "fr_razzberry": [
+      "hidden-field"
+    ],
+    "fr_redshard": [
+      "native-held-species"
+    ],
+    "fr_repeatball": [
+      "native-mart"
+    ],
+    "fr_repel": [
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_retromail": [
+      "native-mart"
+    ],
+    "fr_revivalherb": [
+      "audited-script-candidate"
+    ],
+    "fr_revive": [
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_ruby": [
+      "audited-script-candidate"
+    ],
+    "fr_sacredash": [
+      "hidden-field"
+    ],
+    "fr_sapphire": [
+      "audited-script-candidate"
+    ],
+    "fr_seaincense": [
+      "visible-field"
+    ],
+    "fr_secretkey": [
+      "visible-field"
+    ],
+    "fr_sharpbeak": [
+      "native-held-species"
+    ],
+    "fr_silkscarf": [
+      "visible-field"
+    ],
+    "fr_silphscope": [
+      "audited-script-candidate"
+    ],
+    "fr_silverpowder": [
+      "native-held-species"
+    ],
+    "fr_sitrusberry": [
+      "hidden-field",
+      "native-held-species"
+    ],
+    "fr_smokeball": [
+      "audited-script-candidate"
+    ],
+    "fr_sodapop": [
+      "native-mart"
+    ],
+    "fr_softsand": [
+      "native-held-species"
+    ],
+    "fr_soothebell": [
+      "hidden-field"
+    ],
+    "fr_spelltag": [
+      "native-held-species"
+    ],
+    "fr_ssticket": [
+      "audited-script-candidate"
+    ],
+    "fr_stardust": [
+      "hidden-field",
+      "native-held-species",
+      "visible-field"
+    ],
+    "fr_starpiece": [
+      "hidden-field",
+      "native-held-species",
+      "visible-field"
+    ],
+    "fr_stick": [
+      "native-held-species"
+    ],
+    "fr_sunstone": [
+      "native-held-species",
+      "visible-field"
+    ],
+    "fr_superpotion": [
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_superrepel": [
+      "native-mart"
+    ],
+    "fr_superrod": [
+      "audited-script-candidate"
+    ],
+    "fr_tea": [
+      "audited-script-candidate"
+    ],
+    "fr_teachytv": [
+      "audited-script-candidate"
+    ],
+    "fr_thickclub": [
+      "native-held-species"
+    ],
+    "fr_thunderstone": [
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_timerball": [
+      "native-mart"
+    ],
+    "fr_tinymushroom": [
+      "hidden-field",
+      "native-held-species"
+    ],
+    "fr_tm01": [
+      "visible-field"
+    ],
+    "fr_tm02": [
+      "visible-field"
+    ],
+    "fr_tm03": [
+      "audited-script-candidate"
+    ],
+    "fr_tm04": [
+      "audited-script-candidate"
+    ],
+    "fr_tm05": [
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_tm06": [
+      "audited-script-candidate"
+    ],
+    "fr_tm07": [
+      "visible-field"
+    ],
+    "fr_tm08": [
+      "visible-field"
+    ],
+    "fr_tm09": [
+      "visible-field"
+    ],
+    "fr_tm11": [
+      "visible-field"
+    ],
+    "fr_tm12": [
+      "visible-field"
+    ],
+    "fr_tm13": [
+      "audited-script-candidate"
+    ],
+    "fr_tm14": [
+      "visible-field"
+    ],
+    "fr_tm15": [
+      "native-mart"
+    ],
+    "fr_tm16": [
+      "audited-script-candidate"
+    ],
+    "fr_tm17": [
+      "visible-field"
+    ],
+    "fr_tm18": [
+      "visible-field"
+    ],
+    "fr_tm19": [
+      "audited-script-candidate"
+    ],
+    "fr_tm20": [
+      "audited-script-candidate"
+    ],
+    "fr_tm21": [
+      "visible-field"
+    ],
+    "fr_tm22": [
+      "visible-field"
+    ],
+    "fr_tm23": [
+      "audited-script-candidate"
+    ],
+    "fr_tm24": [
+      "audited-script-candidate"
+    ],
+    "fr_tm25": [
+      "visible-field"
+    ],
+    "fr_tm26": [
+      "audited-script-candidate"
+    ],
+    "fr_tm27": [
+      "audited-script-candidate"
+    ],
+    "fr_tm28": [
+      "audited-script-candidate",
+      "native-mart"
+    ],
+    "fr_tm29": [
+      "audited-script-candidate"
+    ],
+    "fr_tm30": [
+      "audited-script-candidate"
+    ],
+    "fr_tm31": [
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_tm32": [
+      "visible-field"
+    ],
+    "fr_tm33": [
+      "audited-script-candidate"
+    ],
+    "fr_tm34": [
+      "audited-script-candidate"
+    ],
+    "fr_tm35": [
+      "audited-script-candidate"
+    ],
+    "fr_tm36": [
+      "visible-field"
+    ],
+    "fr_tm37": [
+      "visible-field"
+    ],
+    "fr_tm38": [
+      "audited-script-candidate"
+    ],
+    "fr_tm39": [
+      "audited-script-candidate"
+    ],
+    "fr_tm40": [
+      "visible-field"
+    ],
+    "fr_tm41": [
+      "visible-field"
+    ],
+    "fr_tm42": [
+      "audited-script-candidate"
+    ],
+    "fr_tm43": [
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_tm44": [
+      "visible-field"
+    ],
+    "fr_tm45": [
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_tm46": [
+      "visible-field"
+    ],
+    "fr_tm47": [
+      "visible-field"
+    ],
+    "fr_tm48": [
+      "visible-field"
+    ],
+    "fr_tm49": [
+      "visible-field"
+    ],
+    "fr_tm50": [
+      "visible-field"
+    ],
+    "fr_townmap": [
+      "audited-script-candidate"
+    ],
+    "fr_tripass": [
+      "audited-script-candidate"
+    ],
+    "fr_twistedspoon": [
+      "native-held-species"
+    ],
+    "fr_ultraball": [
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_upgrade": [
+      "native-held-species",
+      "visible-field"
+    ],
+    "fr_vsseeker": [
+      "audited-script-candidate"
+    ],
+    "fr_waterstone": [
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_wepearberry": [
+      "hidden-field"
+    ],
+    "fr_xaccuracy": [
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_xattack": [
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_xdefend": [
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_xspecial": [
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_xspeed": [
+      "native-mart",
+      "visible-field"
+    ],
+    "fr_yellowflute": [
+      "audited-script-candidate"
+    ],
+    "fr_yellowshard": [
+      "native-held-species"
+    ],
+    "fr_zinc": [
+      "audited-script-candidate",
+      "hidden-field",
+      "native-mart",
+      "visible-field"
+    ]
+  },
+  "catalogWithoutAuditedAcquisition": [
+    {
+      "item": "fr_safariball",
+      "sourceId": 5,
+      "name": "Safari Ball"
+    },
+    {
+      "item": "fr_diveball",
+      "sourceId": 7,
+      "name": "Dive Ball"
+    },
+    {
+      "item": "fr_luxuryball",
+      "sourceId": 11,
+      "name": "Luxury Ball"
+    },
+    {
+      "item": "fr_premierball",
+      "sourceId": 12,
+      "name": "Premier Ball"
+    },
+    {
+      "item": "fr_blueflute",
+      "sourceId": 39,
+      "name": "Blue Flute"
+    },
+    {
+      "item": "fr_redflute",
+      "sourceId": 41,
+      "name": "Red Flute"
+    },
+    {
+      "item": "fr_blackflute",
+      "sourceId": 42,
+      "name": "Black Flute"
+    },
+    {
+      "item": "fr_whiteflute",
+      "sourceId": 43,
+      "name": "White Flute"
+    },
+    {
+      "item": "fr_shoalsalt",
+      "sourceId": 46,
+      "name": "Shoal Salt"
+    },
+    {
+      "item": "fr_shoalshell",
+      "sourceId": 47,
+      "name": "Shoal Shell"
+    },
+    {
+      "item": "fr_fluffytail",
+      "sourceId": 81,
+      "name": "Fluffy Tail"
+    },
+    {
+      "item": "fr_orangemail",
+      "sourceId": 121,
+      "name": "Orange Mail"
+    },
+    {
+      "item": "fr_harbormail",
+      "sourceId": 122,
+      "name": "Harbor Mail"
+    },
+    {
+      "item": "fr_glittermail",
+      "sourceId": 123,
+      "name": "Glitter Mail"
+    },
+    {
+      "item": "fr_mechmail",
+      "sourceId": 124,
+      "name": "Mech Mail"
+    },
+    {
+      "item": "fr_woodmail",
+      "sourceId": 125,
+      "name": "Wood Mail"
+    },
+    {
+      "item": "fr_wavemail",
+      "sourceId": 126,
+      "name": "Wave Mail"
+    },
+    {
+      "item": "fr_beadmail",
+      "sourceId": 127,
+      "name": "Bead Mail"
+    },
+    {
+      "item": "fr_shadowmail",
+      "sourceId": 128,
+      "name": "Shadow Mail"
+    },
+    {
+      "item": "fr_tropicmail",
+      "sourceId": 129,
+      "name": "Tropic Mail"
+    },
+    {
+      "item": "fr_fabmail",
+      "sourceId": 131,
+      "name": "Fab Mail"
+    },
+    {
+      "item": "fr_figyberry",
+      "sourceId": 143,
+      "name": "Figy Berry"
+    },
+    {
+      "item": "fr_wikiberry",
+      "sourceId": 144,
+      "name": "Wiki Berry"
+    },
+    {
+      "item": "fr_magoberry",
+      "sourceId": 145,
+      "name": "Mago Berry"
+    },
+    {
+      "item": "fr_aguavberry",
+      "sourceId": 146,
+      "name": "Aguav Berry"
+    },
+    {
+      "item": "fr_pomegberry",
+      "sourceId": 153,
+      "name": "Pomeg Berry"
+    },
+    {
+      "item": "fr_kelpsyberry",
+      "sourceId": 154,
+      "name": "Kelpsy Berry"
+    },
+    {
+      "item": "fr_qualotberry",
+      "sourceId": 155,
+      "name": "Qualot Berry"
+    },
+    {
+      "item": "fr_hondewberry",
+      "sourceId": 156,
+      "name": "Hondew Berry"
+    },
+    {
+      "item": "fr_grepaberry",
+      "sourceId": 157,
+      "name": "Grepa Berry"
+    },
+    {
+      "item": "fr_tamatoberry",
+      "sourceId": 158,
+      "name": "Tamato Berry"
+    },
+    {
+      "item": "fr_cornnberry",
+      "sourceId": 159,
+      "name": "Cornn Berry"
+    },
+    {
+      "item": "fr_magostberry",
+      "sourceId": 160,
+      "name": "Magost Berry"
+    },
+    {
+      "item": "fr_rabutaberry",
+      "sourceId": 161,
+      "name": "Rabuta Berry"
+    },
+    {
+      "item": "fr_nomelberry",
+      "sourceId": 162,
+      "name": "Nomel Berry"
+    },
+    {
+      "item": "fr_spelonberry",
+      "sourceId": 163,
+      "name": "Spelon Berry"
+    },
+    {
+      "item": "fr_pamtreberry",
+      "sourceId": 164,
+      "name": "Pamtre Berry"
+    },
+    {
+      "item": "fr_watmelberry",
+      "sourceId": 165,
+      "name": "Watmel Berry"
+    },
+    {
+      "item": "fr_durinberry",
+      "sourceId": 166,
+      "name": "Durin Berry"
+    },
+    {
+      "item": "fr_belueberry",
+      "sourceId": 167,
+      "name": "Belue Berry"
+    },
+    {
+      "item": "fr_liechiberry",
+      "sourceId": 168,
+      "name": "Liechi Berry"
+    },
+    {
+      "item": "fr_ganlonberry",
+      "sourceId": 169,
+      "name": "Ganlon Berry"
+    },
+    {
+      "item": "fr_salacberry",
+      "sourceId": 170,
+      "name": "Salac Berry"
+    },
+    {
+      "item": "fr_petayaberry",
+      "sourceId": 171,
+      "name": "Petaya Berry"
+    },
+    {
+      "item": "fr_apicotberry",
+      "sourceId": 172,
+      "name": "Apicot Berry"
+    },
+    {
+      "item": "fr_lansatberry",
+      "sourceId": 173,
+      "name": "Lansat Berry"
+    },
+    {
+      "item": "fr_starfberry",
+      "sourceId": 174,
+      "name": "Starf Berry"
+    },
+    {
+      "item": "fr_enigmaberry",
+      "sourceId": 175,
+      "name": "Enigma Berry"
+    },
+    {
+      "item": "fr_brightpowder",
+      "sourceId": 179,
+      "name": "Brightpowder"
+    },
+    {
+      "item": "fr_whiteherb",
+      "sourceId": 180,
+      "name": "White Herb"
+    },
+    {
+      "item": "fr_mentalherb",
+      "sourceId": 185,
+      "name": "Mental Herb"
+    },
+    {
+      "item": "fr_choiceband",
+      "sourceId": 186,
+      "name": "Choice Band"
+    },
+    {
+      "item": "fr_souldew",
+      "sourceId": 191,
+      "name": "Soul Dew"
+    },
+    {
+      "item": "fr_deepseatooth",
+      "sourceId": 192,
+      "name": "Deepseatooth"
+    },
+    {
+      "item": "fr_deepseascale",
+      "sourceId": 193,
+      "name": "Deepseascale"
+    },
+    {
+      "item": "fr_scopelens",
+      "sourceId": 198,
+      "name": "Scope Lens"
+    },
+    {
+      "item": "fr_lightball",
+      "sourceId": 202,
+      "name": "Light Ball"
+    },
+    {
+      "item": "fr_blackbelt",
+      "sourceId": 207,
+      "name": "Black Belt"
+    },
+    {
+      "item": "fr_shellbell",
+      "sourceId": 219,
+      "name": "Shell Bell"
+    },
+    {
+      "item": "fr_redscarf",
+      "sourceId": 254,
+      "name": "Red Scarf"
+    },
+    {
+      "item": "fr_bluescarf",
+      "sourceId": 255,
+      "name": "Blue Scarf"
+    },
+    {
+      "item": "fr_pinkscarf",
+      "sourceId": 256,
+      "name": "Pink Scarf"
+    },
+    {
+      "item": "fr_greenscarf",
+      "sourceId": 257,
+      "name": "Green Scarf"
+    },
+    {
+      "item": "fr_yellowscarf",
+      "sourceId": 258,
+      "name": "Yellow Scarf"
+    },
+    {
+      "item": "fr_machbike",
+      "sourceId": 259,
+      "name": "Mach Bike"
+    },
+    {
+      "item": "fr_contestpass",
+      "sourceId": 266,
+      "name": "Contest Pass"
+    },
+    {
+      "item": "fr_wailmerpail",
+      "sourceId": 268,
+      "name": "Wailmer Pail"
+    },
+    {
+      "item": "fr_devongoods",
+      "sourceId": 269,
+      "name": "Devon Goods"
+    },
+    {
+      "item": "fr_sootsack",
+      "sourceId": 270,
+      "name": "Soot Sack"
+    },
+    {
+      "item": "fr_basementkey",
+      "sourceId": 271,
+      "name": "Basement Key"
+    },
+    {
+      "item": "fr_acrobike",
+      "sourceId": 272,
+      "name": "Acro Bike"
+    },
+    {
+      "item": "fr_pokeblockcase",
+      "sourceId": 273,
+      "name": "Pokéblock Case"
+    },
+    {
+      "item": "fr_letter",
+      "sourceId": 274,
+      "name": "Letter"
+    },
+    {
+      "item": "fr_eonticket",
+      "sourceId": 275,
+      "name": "Eon Ticket"
+    },
+    {
+      "item": "fr_redorb",
+      "sourceId": 276,
+      "name": "Red Orb"
+    },
+    {
+      "item": "fr_blueorb",
+      "sourceId": 277,
+      "name": "Blue Orb"
+    },
+    {
+      "item": "fr_scanner",
+      "sourceId": 278,
+      "name": "Scanner"
+    },
+    {
+      "item": "fr_gogoggles",
+      "sourceId": 279,
+      "name": "Go-Goggles"
+    },
+    {
+      "item": "fr_rm1key",
+      "sourceId": 281,
+      "name": "Rm. 1 Key"
+    },
+    {
+      "item": "fr_rm2key",
+      "sourceId": 282,
+      "name": "Rm. 2 Key"
+    },
+    {
+      "item": "fr_rm4key",
+      "sourceId": 283,
+      "name": "Rm. 4 Key"
+    },
+    {
+      "item": "fr_rm6key",
+      "sourceId": 284,
+      "name": "Rm. 6 Key"
+    },
+    {
+      "item": "fr_storagekey",
+      "sourceId": 285,
+      "name": "Storage Key"
+    },
+    {
+      "item": "fr_rootfossil",
+      "sourceId": 286,
+      "name": "Root Fossil"
+    },
+    {
+      "item": "fr_clawfossil",
+      "sourceId": 287,
+      "name": "Claw Fossil"
+    },
+    {
+      "item": "fr_devonscope",
+      "sourceId": 288,
+      "name": "Devon Scope"
+    },
+    {
+      "item": "fr_tm10",
+      "sourceId": 298,
+      "name": "TM10"
+    },
+    {
+      "item": "fr_famechecker",
+      "sourceId": 363,
+      "name": "Fame Checker"
+    },
+    {
+      "item": "fr_tmcase",
+      "sourceId": 364,
+      "name": "TM Case"
+    },
+    {
+      "item": "fr_berrypouch",
+      "sourceId": 365,
+      "name": "Berry Pouch"
+    },
+    {
+      "item": "fr_mysticticket",
+      "sourceId": 370,
+      "name": "Mysticticket"
+    },
+    {
+      "item": "fr_auroraticket",
+      "sourceId": 371,
+      "name": "Auroraticket"
+    }
+  ],
+  "hoennCarryoverKeyRecords": [
+    {
+      "item": "fr_machbike",
+      "sourceId": 259,
+      "name": "Mach Bike"
+    },
+    {
+      "item": "fr_contestpass",
+      "sourceId": 266,
+      "name": "Contest Pass"
+    },
+    {
+      "item": "fr_wailmerpail",
+      "sourceId": 268,
+      "name": "Wailmer Pail"
+    },
+    {
+      "item": "fr_devongoods",
+      "sourceId": 269,
+      "name": "Devon Goods"
+    },
+    {
+      "item": "fr_sootsack",
+      "sourceId": 270,
+      "name": "Soot Sack"
+    },
+    {
+      "item": "fr_basementkey",
+      "sourceId": 271,
+      "name": "Basement Key"
+    },
+    {
+      "item": "fr_acrobike",
+      "sourceId": 272,
+      "name": "Acro Bike"
+    },
+    {
+      "item": "fr_pokeblockcase",
+      "sourceId": 273,
+      "name": "Pokéblock Case"
+    },
+    {
+      "item": "fr_letter",
+      "sourceId": 274,
+      "name": "Letter"
+    },
+    {
+      "item": "fr_eonticket",
+      "sourceId": 275,
+      "name": "Eon Ticket"
+    },
+    {
+      "item": "fr_redorb",
+      "sourceId": 276,
+      "name": "Red Orb"
+    },
+    {
+      "item": "fr_blueorb",
+      "sourceId": 277,
+      "name": "Blue Orb"
+    },
+    {
+      "item": "fr_scanner",
+      "sourceId": 278,
+      "name": "Scanner"
+    },
+    {
+      "item": "fr_gogoggles",
+      "sourceId": 279,
+      "name": "Go-Goggles"
+    },
+    {
+      "item": "fr_meteorite",
+      "sourceId": 280,
+      "name": "Meteorite"
+    },
+    {
+      "item": "fr_rm1key",
+      "sourceId": 281,
+      "name": "Rm. 1 Key"
+    },
+    {
+      "item": "fr_rm2key",
+      "sourceId": 282,
+      "name": "Rm. 2 Key"
+    },
+    {
+      "item": "fr_rm4key",
+      "sourceId": 283,
+      "name": "Rm. 4 Key"
+    },
+    {
+      "item": "fr_rm6key",
+      "sourceId": 284,
+      "name": "Rm. 6 Key"
+    },
+    {
+      "item": "fr_storagekey",
+      "sourceId": 285,
+      "name": "Storage Key"
+    },
+    {
+      "item": "fr_rootfossil",
+      "sourceId": 286,
+      "name": "Root Fossil"
+    },
+    {
+      "item": "fr_clawfossil",
+      "sourceId": 287,
+      "name": "Claw Fossil"
+    },
+    {
+      "item": "fr_devonscope",
+      "sourceId": 288,
+      "name": "Devon Scope"
+    }
+  ],
+  "nativeLayoutAdapters": {
+    "kanto_2_34": {
+      "sourceLayoutTable": "0x34ebfc",
+      "sourceOnLoadScript": "0x164da4",
+      "sourceLayoutCommand": "0x164dc8",
+      "sourceGrid": "0x34528c",
+      "policy": "Use the original completed-tunnel layout for NXT postgame access. The native coordinates and metatiles are unmodified; no invented collision corridor is carved."
+    }
+  },
+  "parityChecks": [
+    "server/client inventory",
+    "all Kanto map geometry and object bindings",
+    "hidden awards and native quantities",
+    "all native TM compatibility bits",
+    "native held slots, EV yields and Safari flee rates",
+    "HM exclusion",
+    "native icon files",
+    "map item permissions"
+  ],
+  "policy": "Coverage verifies published data and source bindings. Runtime and transaction behavior is covered separately by the Kanto item, gift, field-service and Safari tests. Catalog presence does not fabricate native acquisition routes for unused Hoenn carryover items."
+}

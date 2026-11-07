@@ -1,0 +1,1053 @@
+{
+  "format": 1,
+  "sourceSha256": "729041b940afe031302d630fdbe57c0c145f3f7b6d9b8eca5e98678d0ca4d059",
+  "byMap": {
+    "kanto_1_45": {
+      "641": {
+        "image": "world/field_tiles/kanto_1_45/641.png",
+        "ground": "world/field_tiles/kanto_1_45/641_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 641,
+        "width": 16,
+        "height": 16
+      },
+      "642": {
+        "image": "world/field_tiles/kanto_1_45/642.png",
+        "ground": "world/field_tiles/kanto_1_45/642_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 642,
+        "width": 16,
+        "height": 16
+      }
+    },
+    "kanto_1_48": {
+      "820": {
+        "image": "world/field_tiles/kanto_1_48/820.png",
+        "ground": "world/field_tiles/kanto_1_48/820_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 820,
+        "width": 16,
+        "height": 16
+      },
+      "821": {
+        "image": "world/field_tiles/kanto_1_48/821.png",
+        "ground": "world/field_tiles/kanto_1_48/821_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 821,
+        "width": 16,
+        "height": 16
+      }
+    },
+    "kanto_1_49": {
+      "821": {
+        "image": "world/field_tiles/kanto_1_49/821.png",
+        "ground": "world/field_tiles/kanto_1_49/821_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 821,
+        "width": 16,
+        "height": 16
+      },
+      "825": {
+        "image": "world/field_tiles/kanto_1_49/825.png",
+        "ground": "world/field_tiles/kanto_1_49/825_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 825,
+        "width": 16,
+        "height": 16
+      },
+      "826": {
+        "image": "world/field_tiles/kanto_1_49/826.png",
+        "ground": "world/field_tiles/kanto_1_49/826_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 826,
+        "width": 16,
+        "height": 16
+      },
+      "838": {
+        "image": "world/field_tiles/kanto_1_49/838.png",
+        "ground": "world/field_tiles/kanto_1_49/838_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 838,
+        "width": 16,
+        "height": 16
+      },
+      "839": {
+        "image": "world/field_tiles/kanto_1_49/839.png",
+        "ground": "world/field_tiles/kanto_1_49/839_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 839,
+        "width": 16,
+        "height": 16
+      }
+    },
+    "kanto_1_50": {
+      "820": {
+        "image": "world/field_tiles/kanto_1_50/820.png",
+        "ground": "world/field_tiles/kanto_1_50/820_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 820,
+        "width": 16,
+        "height": 16
+      },
+      "821": {
+        "image": "world/field_tiles/kanto_1_50/821.png",
+        "ground": "world/field_tiles/kanto_1_50/821_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 821,
+        "width": 16,
+        "height": 16
+      }
+    },
+    "kanto_1_51": {
+      "821": {
+        "image": "world/field_tiles/kanto_1_51/821.png",
+        "ground": "world/field_tiles/kanto_1_51/821_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 821,
+        "width": 16,
+        "height": 16
+      },
+      "825": {
+        "image": "world/field_tiles/kanto_1_51/825.png",
+        "ground": "world/field_tiles/kanto_1_51/825_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 825,
+        "width": 16,
+        "height": 16
+      },
+      "826": {
+        "image": "world/field_tiles/kanto_1_51/826.png",
+        "ground": "world/field_tiles/kanto_1_51/826_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 826,
+        "width": 16,
+        "height": 16
+      },
+      "838": {
+        "image": "world/field_tiles/kanto_1_51/838.png",
+        "ground": "world/field_tiles/kanto_1_51/838_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 838,
+        "width": 16,
+        "height": 16
+      },
+      "839": {
+        "image": "world/field_tiles/kanto_1_51/839.png",
+        "ground": "world/field_tiles/kanto_1_51/839_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 839,
+        "width": 16,
+        "height": 16
+      }
+    },
+    "kanto_1_52": {
+      "821": {
+        "image": "world/field_tiles/kanto_1_52/821.png",
+        "ground": "world/field_tiles/kanto_1_52/821_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 821,
+        "width": 16,
+        "height": 16
+      },
+      "825": {
+        "image": "world/field_tiles/kanto_1_52/825.png",
+        "ground": "world/field_tiles/kanto_1_52/825_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 825,
+        "width": 16,
+        "height": 16
+      },
+      "826": {
+        "image": "world/field_tiles/kanto_1_52/826.png",
+        "ground": "world/field_tiles/kanto_1_52/826_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 826,
+        "width": 16,
+        "height": 16
+      },
+      "838": {
+        "image": "world/field_tiles/kanto_1_52/838.png",
+        "ground": "world/field_tiles/kanto_1_52/838_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 838,
+        "width": 16,
+        "height": 16
+      },
+      "839": {
+        "image": "world/field_tiles/kanto_1_52/839.png",
+        "ground": "world/field_tiles/kanto_1_52/839_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 839,
+        "width": 16,
+        "height": 16
+      }
+    },
+    "kanto_1_53": {
+      "820": {
+        "image": "world/field_tiles/kanto_1_53/820.png",
+        "ground": "world/field_tiles/kanto_1_53/820_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 820,
+        "width": 16,
+        "height": 16
+      },
+      "821": {
+        "image": "world/field_tiles/kanto_1_53/821.png",
+        "ground": "world/field_tiles/kanto_1_53/821_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 821,
+        "width": 16,
+        "height": 16
+      }
+    },
+    "kanto_1_54": {
+      "821": {
+        "image": "world/field_tiles/kanto_1_54/821.png",
+        "ground": "world/field_tiles/kanto_1_54/821_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 821,
+        "width": 16,
+        "height": 16
+      },
+      "825": {
+        "image": "world/field_tiles/kanto_1_54/825.png",
+        "ground": "world/field_tiles/kanto_1_54/825_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 825,
+        "width": 16,
+        "height": 16
+      },
+      "826": {
+        "image": "world/field_tiles/kanto_1_54/826.png",
+        "ground": "world/field_tiles/kanto_1_54/826_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 826,
+        "width": 16,
+        "height": 16
+      },
+      "838": {
+        "image": "world/field_tiles/kanto_1_54/838.png",
+        "ground": "world/field_tiles/kanto_1_54/838_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 838,
+        "width": 16,
+        "height": 16
+      },
+      "839": {
+        "image": "world/field_tiles/kanto_1_54/839.png",
+        "ground": "world/field_tiles/kanto_1_54/839_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 839,
+        "width": 16,
+        "height": 16
+      }
+    },
+    "kanto_1_55": {
+      "820": {
+        "image": "world/field_tiles/kanto_1_55/820.png",
+        "ground": "world/field_tiles/kanto_1_55/820_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 820,
+        "width": 16,
+        "height": 16
+      },
+      "821": {
+        "image": "world/field_tiles/kanto_1_55/821.png",
+        "ground": "world/field_tiles/kanto_1_55/821_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 821,
+        "width": 16,
+        "height": 16
+      },
+      "825": {
+        "image": "world/field_tiles/kanto_1_55/825.png",
+        "ground": "world/field_tiles/kanto_1_55/825_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 825,
+        "width": 16,
+        "height": 16
+      },
+      "826": {
+        "image": "world/field_tiles/kanto_1_55/826.png",
+        "ground": "world/field_tiles/kanto_1_55/826_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 826,
+        "width": 16,
+        "height": 16
+      },
+      "838": {
+        "image": "world/field_tiles/kanto_1_55/838.png",
+        "ground": "world/field_tiles/kanto_1_55/838_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 838,
+        "width": 16,
+        "height": 16
+      },
+      "839": {
+        "image": "world/field_tiles/kanto_1_55/839.png",
+        "ground": "world/field_tiles/kanto_1_55/839_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 839,
+        "width": 16,
+        "height": 16
+      }
+    },
+    "kanto_1_56": {
+      "820": {
+        "image": "world/field_tiles/kanto_1_56/820.png",
+        "ground": "world/field_tiles/kanto_1_56/820_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 820,
+        "width": 16,
+        "height": 16
+      },
+      "821": {
+        "image": "world/field_tiles/kanto_1_56/821.png",
+        "ground": "world/field_tiles/kanto_1_56/821_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 821,
+        "width": 16,
+        "height": 16
+      }
+    },
+    "kanto_1_57": {
+      "820": {
+        "image": "world/field_tiles/kanto_1_57/820.png",
+        "ground": "world/field_tiles/kanto_1_57/820_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 820,
+        "width": 16,
+        "height": 16
+      },
+      "821": {
+        "image": "world/field_tiles/kanto_1_57/821.png",
+        "ground": "world/field_tiles/kanto_1_57/821_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 821,
+        "width": 16,
+        "height": 16
+      }
+    },
+    "kanto_1_59": {
+      "644": {
+        "image": "world/field_tiles/kanto_1_59/644.png",
+        "ground": "world/field_tiles/kanto_1_59/644_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 644,
+        "width": 16,
+        "height": 16
+      },
+      "645": {
+        "image": "world/field_tiles/kanto_1_59/645.png",
+        "ground": "world/field_tiles/kanto_1_59/645_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 645,
+        "width": 16,
+        "height": 16
+      },
+      "760": {
+        "image": "world/field_tiles/kanto_1_59/760.png",
+        "ground": "world/field_tiles/kanto_1_59/760_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 760,
+        "width": 16,
+        "height": 16
+      },
+      "761": {
+        "image": "world/field_tiles/kanto_1_59/761.png",
+        "ground": "world/field_tiles/kanto_1_59/761_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 761,
+        "width": 16,
+        "height": 16
+      },
+      "762": {
+        "image": "world/field_tiles/kanto_1_59/762.png",
+        "ground": "world/field_tiles/kanto_1_59/762_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 762,
+        "width": 16,
+        "height": 16
+      },
+      "768": {
+        "image": "world/field_tiles/kanto_1_59/768.png",
+        "ground": "world/field_tiles/kanto_1_59/768_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 768,
+        "width": 16,
+        "height": 16
+      },
+      "769": {
+        "image": "world/field_tiles/kanto_1_59/769.png",
+        "ground": "world/field_tiles/kanto_1_59/769_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 769,
+        "width": 16,
+        "height": 16
+      },
+      "770": {
+        "image": "world/field_tiles/kanto_1_59/770.png",
+        "ground": "world/field_tiles/kanto_1_59/770_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 770,
+        "width": 16,
+        "height": 16
+      },
+      "788": {
+        "image": "world/field_tiles/kanto_1_59/788.png",
+        "ground": "world/field_tiles/kanto_1_59/788_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 788,
+        "width": 16,
+        "height": 16
+      },
+      "845": {
+        "image": "world/field_tiles/kanto_1_59/845.png",
+        "ground": "world/field_tiles/kanto_1_59/845_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 845,
+        "width": 16,
+        "height": 16
+      }
+    },
+    "kanto_1_60": {
+      "644": {
+        "image": "world/field_tiles/kanto_1_60/644.png",
+        "ground": "world/field_tiles/kanto_1_60/644_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 644,
+        "width": 16,
+        "height": 16
+      },
+      "645": {
+        "image": "world/field_tiles/kanto_1_60/645.png",
+        "ground": "world/field_tiles/kanto_1_60/645_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 645,
+        "width": 16,
+        "height": 16
+      },
+      "677": {
+        "image": "world/field_tiles/kanto_1_60/677.png",
+        "ground": "world/field_tiles/kanto_1_60/677_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 677,
+        "width": 16,
+        "height": 16
+      },
+      "685": {
+        "image": "world/field_tiles/kanto_1_60/685.png",
+        "ground": "world/field_tiles/kanto_1_60/685_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 685,
+        "width": 16,
+        "height": 16
+      },
+      "693": {
+        "image": "world/field_tiles/kanto_1_60/693.png",
+        "ground": "world/field_tiles/kanto_1_60/693_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 693,
+        "width": 16,
+        "height": 16
+      },
+      "760": {
+        "image": "world/field_tiles/kanto_1_60/760.png",
+        "ground": "world/field_tiles/kanto_1_60/760_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 760,
+        "width": 16,
+        "height": 16
+      },
+      "761": {
+        "image": "world/field_tiles/kanto_1_60/761.png",
+        "ground": "world/field_tiles/kanto_1_60/761_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 761,
+        "width": 16,
+        "height": 16
+      },
+      "762": {
+        "image": "world/field_tiles/kanto_1_60/762.png",
+        "ground": "world/field_tiles/kanto_1_60/762_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 762,
+        "width": 16,
+        "height": 16
+      },
+      "768": {
+        "image": "world/field_tiles/kanto_1_60/768.png",
+        "ground": "world/field_tiles/kanto_1_60/768_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 768,
+        "width": 16,
+        "height": 16
+      },
+      "769": {
+        "image": "world/field_tiles/kanto_1_60/769.png",
+        "ground": "world/field_tiles/kanto_1_60/769_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 769,
+        "width": 16,
+        "height": 16
+      },
+      "770": {
+        "image": "world/field_tiles/kanto_1_60/770.png",
+        "ground": "world/field_tiles/kanto_1_60/770_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 770,
+        "width": 16,
+        "height": 16
+      },
+      "788": {
+        "image": "world/field_tiles/kanto_1_60/788.png",
+        "ground": "world/field_tiles/kanto_1_60/788_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 788,
+        "width": 16,
+        "height": 16
+      },
+      "845": {
+        "image": "world/field_tiles/kanto_1_60/845.png",
+        "ground": "world/field_tiles/kanto_1_60/845_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 845,
+        "width": 16,
+        "height": 16
+      },
+      "848": {
+        "image": "world/field_tiles/kanto_1_60/848.png",
+        "ground": "world/field_tiles/kanto_1_60/848_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 848,
+        "width": 16,
+        "height": 16
+      },
+      "856": {
+        "image": "world/field_tiles/kanto_1_60/856.png",
+        "ground": "world/field_tiles/kanto_1_60/856_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 856,
+        "width": 16,
+        "height": 16
+      },
+      "864": {
+        "image": "world/field_tiles/kanto_1_60/864.png",
+        "ground": "world/field_tiles/kanto_1_60/864_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 864,
+        "width": 16,
+        "height": 16
+      },
+      "872": {
+        "image": "world/field_tiles/kanto_1_60/872.png",
+        "ground": "world/field_tiles/kanto_1_60/872_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 872,
+        "width": 16,
+        "height": 16
+      },
+      "880": {
+        "image": "world/field_tiles/kanto_1_60/880.png",
+        "ground": "world/field_tiles/kanto_1_60/880_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 880,
+        "width": 16,
+        "height": 16
+      }
+    },
+    "kanto_1_61": {
+      "644": {
+        "image": "world/field_tiles/kanto_1_61/644.png",
+        "ground": "world/field_tiles/kanto_1_61/644_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 644,
+        "width": 16,
+        "height": 16
+      },
+      "645": {
+        "image": "world/field_tiles/kanto_1_61/645.png",
+        "ground": "world/field_tiles/kanto_1_61/645_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 645,
+        "width": 16,
+        "height": 16
+      },
+      "677": {
+        "image": "world/field_tiles/kanto_1_61/677.png",
+        "ground": "world/field_tiles/kanto_1_61/677_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 677,
+        "width": 16,
+        "height": 16
+      },
+      "685": {
+        "image": "world/field_tiles/kanto_1_61/685.png",
+        "ground": "world/field_tiles/kanto_1_61/685_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 685,
+        "width": 16,
+        "height": 16
+      },
+      "693": {
+        "image": "world/field_tiles/kanto_1_61/693.png",
+        "ground": "world/field_tiles/kanto_1_61/693_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 693,
+        "width": 16,
+        "height": 16
+      },
+      "760": {
+        "image": "world/field_tiles/kanto_1_61/760.png",
+        "ground": "world/field_tiles/kanto_1_61/760_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 760,
+        "width": 16,
+        "height": 16
+      },
+      "761": {
+        "image": "world/field_tiles/kanto_1_61/761.png",
+        "ground": "world/field_tiles/kanto_1_61/761_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 761,
+        "width": 16,
+        "height": 16
+      },
+      "762": {
+        "image": "world/field_tiles/kanto_1_61/762.png",
+        "ground": "world/field_tiles/kanto_1_61/762_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 762,
+        "width": 16,
+        "height": 16
+      },
+      "768": {
+        "image": "world/field_tiles/kanto_1_61/768.png",
+        "ground": "world/field_tiles/kanto_1_61/768_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 768,
+        "width": 16,
+        "height": 16
+      },
+      "769": {
+        "image": "world/field_tiles/kanto_1_61/769.png",
+        "ground": "world/field_tiles/kanto_1_61/769_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 769,
+        "width": 16,
+        "height": 16
+      },
+      "770": {
+        "image": "world/field_tiles/kanto_1_61/770.png",
+        "ground": "world/field_tiles/kanto_1_61/770_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 770,
+        "width": 16,
+        "height": 16
+      },
+      "788": {
+        "image": "world/field_tiles/kanto_1_61/788.png",
+        "ground": "world/field_tiles/kanto_1_61/788_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 788,
+        "width": 16,
+        "height": 16
+      },
+      "845": {
+        "image": "world/field_tiles/kanto_1_61/845.png",
+        "ground": "world/field_tiles/kanto_1_61/845_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 845,
+        "width": 16,
+        "height": 16
+      },
+      "848": {
+        "image": "world/field_tiles/kanto_1_61/848.png",
+        "ground": "world/field_tiles/kanto_1_61/848_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 848,
+        "width": 16,
+        "height": 16
+      },
+      "856": {
+        "image": "world/field_tiles/kanto_1_61/856.png",
+        "ground": "world/field_tiles/kanto_1_61/856_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 856,
+        "width": 16,
+        "height": 16
+      },
+      "864": {
+        "image": "world/field_tiles/kanto_1_61/864.png",
+        "ground": "world/field_tiles/kanto_1_61/864_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 864,
+        "width": 16,
+        "height": 16
+      },
+      "872": {
+        "image": "world/field_tiles/kanto_1_61/872.png",
+        "ground": "world/field_tiles/kanto_1_61/872_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 872,
+        "width": 16,
+        "height": 16
+      },
+      "880": {
+        "image": "world/field_tiles/kanto_1_61/880.png",
+        "ground": "world/field_tiles/kanto_1_61/880_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 880,
+        "width": 16,
+        "height": 16
+      }
+    },
+    "kanto_1_62": {
+      "646": {
+        "image": "world/field_tiles/kanto_1_62/646.png",
+        "ground": "world/field_tiles/kanto_1_62/646_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 646,
+        "width": 16,
+        "height": 16
+      },
+      "647": {
+        "image": "world/field_tiles/kanto_1_62/647.png",
+        "ground": "world/field_tiles/kanto_1_62/647_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 647,
+        "width": 16,
+        "height": 16
+      },
+      "677": {
+        "image": "world/field_tiles/kanto_1_62/677.png",
+        "ground": "world/field_tiles/kanto_1_62/677_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 677,
+        "width": 16,
+        "height": 16
+      },
+      "685": {
+        "image": "world/field_tiles/kanto_1_62/685.png",
+        "ground": "world/field_tiles/kanto_1_62/685_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 685,
+        "width": 16,
+        "height": 16
+      },
+      "688": {
+        "image": "world/field_tiles/kanto_1_62/688.png",
+        "ground": "world/field_tiles/kanto_1_62/688_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 688,
+        "width": 16,
+        "height": 16
+      },
+      "760": {
+        "image": "world/field_tiles/kanto_1_62/760.png",
+        "ground": "world/field_tiles/kanto_1_62/760_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 760,
+        "width": 16,
+        "height": 16
+      },
+      "761": {
+        "image": "world/field_tiles/kanto_1_62/761.png",
+        "ground": "world/field_tiles/kanto_1_62/761_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 761,
+        "width": 16,
+        "height": 16
+      },
+      "762": {
+        "image": "world/field_tiles/kanto_1_62/762.png",
+        "ground": "world/field_tiles/kanto_1_62/762_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 762,
+        "width": 16,
+        "height": 16
+      },
+      "790": {
+        "image": "world/field_tiles/kanto_1_62/790.png",
+        "ground": "world/field_tiles/kanto_1_62/790_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 790,
+        "width": 16,
+        "height": 16
+      },
+      "847": {
+        "image": "world/field_tiles/kanto_1_62/847.png",
+        "ground": "world/field_tiles/kanto_1_62/847_ground.png",
+        "overlay": null,
+        "layerType": 0,
+        "metatile": 847,
+        "width": 16,
+        "height": 16
+      },
+      "848": {
+        "image": "world/field_tiles/kanto_1_62/848.png",
+        "ground": "world/field_tiles/kanto_1_62/848_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 848,
+        "width": 16,
+        "height": 16
+      },
+      "852": {
+        "image": "world/field_tiles/kanto_1_62/852.png",
+        "ground": "world/field_tiles/kanto_1_62/852_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 852,
+        "width": 16,
+        "height": 16
+      },
+      "853": {
+        "image": "world/field_tiles/kanto_1_62/853.png",
+        "ground": "world/field_tiles/kanto_1_62/853_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 853,
+        "width": 16,
+        "height": 16
+      },
+      "854": {
+        "image": "world/field_tiles/kanto_1_62/854.png",
+        "ground": "world/field_tiles/kanto_1_62/854_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 854,
+        "width": 16,
+        "height": 16
+      },
+      "856": {
+        "image": "world/field_tiles/kanto_1_62/856.png",
+        "ground": "world/field_tiles/kanto_1_62/856_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 856,
+        "width": 16,
+        "height": 16
+      },
+      "866": {
+        "image": "world/field_tiles/kanto_1_62/866.png",
+        "ground": "world/field_tiles/kanto_1_62/866_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 866,
+        "width": 16,
+        "height": 16
+      },
+      "874": {
+        "image": "world/field_tiles/kanto_1_62/874.png",
+        "ground": "world/field_tiles/kanto_1_62/874_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 874,
+        "width": 16,
+        "height": 16
+      },
+      "882": {
+        "image": "world/field_tiles/kanto_1_62/882.png",
+        "ground": "world/field_tiles/kanto_1_62/882_ground.png",
+        "overlay": null,
+        "layerType": 1,
+        "metatile": 882,
+        "width": 16,
+        "height": 16
+      }
+    }
+  },
+  "references": {
+    "kanto_1_45": {
+      "header": "0x34f770",
+      "layout": "0x306c08",
+      "primaryTileset": "0x2d4c24",
+      "secondaryTileset": "0x2d4f3c"
+    },
+    "kanto_1_48": {
+      "header": "0x34f7c4",
+      "layout": "0x3078b0",
+      "primaryTileset": "0x2d4c24",
+      "secondaryTileset": "0x2d4f3c"
+    },
+    "kanto_1_49": {
+      "header": "0x34f7e0",
+      "layout": "0x307f04",
+      "primaryTileset": "0x2d4c24",
+      "secondaryTileset": "0x2d4f3c"
+    },
+    "kanto_1_50": {
+      "header": "0x34f7fc",
+      "layout": "0x308558",
+      "primaryTileset": "0x2d4c24",
+      "secondaryTileset": "0x2d4f3c"
+    },
+    "kanto_1_51": {
+      "header": "0x34f818",
+      "layout": "0x308bac",
+      "primaryTileset": "0x2d4c24",
+      "secondaryTileset": "0x2d4f3c"
+    },
+    "kanto_1_52": {
+      "header": "0x34f834",
+      "layout": "0x30906c",
+      "primaryTileset": "0x2d4c24",
+      "secondaryTileset": "0x2d4f3c"
+    },
+    "kanto_1_53": {
+      "header": "0x34f850",
+      "layout": "0x30952c",
+      "primaryTileset": "0x2d4c24",
+      "secondaryTileset": "0x2d4f3c"
+    },
+    "kanto_1_54": {
+      "header": "0x34f86c",
+      "layout": "0x3099ec",
+      "primaryTileset": "0x2d4c24",
+      "secondaryTileset": "0x2d4f3c"
+    },
+    "kanto_1_55": {
+      "header": "0x34f888",
+      "layout": "0x309eac",
+      "primaryTileset": "0x2d4c24",
+      "secondaryTileset": "0x2d4f3c"
+    },
+    "kanto_1_56": {
+      "header": "0x34f8a4",
+      "layout": "0x30a158",
+      "primaryTileset": "0x2d4c24",
+      "secondaryTileset": "0x2d4f3c"
+    },
+    "kanto_1_57": {
+      "header": "0x34f8c0",
+      "layout": "0x30a424",
+      "primaryTileset": "0x2d4c24",
+      "secondaryTileset": "0x2d4f3c"
+    },
+    "kanto_1_59": {
+      "header": "0x34f8f8",
+      "layout": "0x30aeac",
+      "primaryTileset": "0x2d4c24",
+      "secondaryTileset": "0x2d4f9c"
+    },
+    "kanto_1_60": {
+      "header": "0x34f914",
+      "layout": "0x30ba18",
+      "primaryTileset": "0x2d4c24",
+      "secondaryTileset": "0x2d4f9c"
+    },
+    "kanto_1_61": {
+      "header": "0x34f930",
+      "layout": "0x30c4a0",
+      "primaryTileset": "0x2d4c24",
+      "secondaryTileset": "0x2d4f9c"
+    },
+    "kanto_1_62": {
+      "header": "0x34f94c",
+      "layout": "0x30cf28",
+      "primaryTileset": "0x2d4c24",
+      "secondaryTileset": "0x2d4f9c"
+    }
+  },
+  "policy": "Exact native FireRed metatile art for server-selected private map state. Draw the selected ground before actors, suppress the old baked overlay within each replacement tile, then draw the selected native overlay after actors.",
+  "audit": {
+    "maps": 15,
+    "metatiles": 102,
+    "groundImages": 102,
+    "overlayImages": 0
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "pack": "ed3bbfd4c3c26dff1a57e2de",
+  "scope": "Native map geometry and original badge/elevation source audit; NXT intentionally substitutes a Water-type party member for HM ownership and Surf move knowledge.",
+  "badgeRequirements": [
+    {
+      "region": "Kanto",
+      "leader": "Koga",
+      "badgeOrder": 5,
+      "map": "kanto_11_3"
+    },
+    {
+      "region": "Johto",
+      "leader": "Morty",
+      "badgeOrder": 4,
+      "map": "johto_34_35"
+    }
+  ],
+  "primarySources": [
+    {
+      "url": "https://github.com/pret/pokefirered/blob/master/src/field_control_avatar.c",
+      "finding": "GetInteractedWaterScript checks FLAG_BADGE05_GET, party Surf and legal facing water."
+    },
+    {
+      "url": "https://github.com/pret/pokefirered/blob/master/src/field_player_avatar.c",
+      "finding": "IsPlayerFacingSurfableFishableWater requires elevation mismatch, current player elevation 3 and water terrain."
+    },
+    {
+      "url": "https://github.com/pret/pokecrystal/blob/master/engine/events/overworld.asm",
+      "finding": "TrySurfOW checks facing-water permission and ENGINE_FOGBADGE."
+    }
+  ],
+  "fixtures": [
+    {
+      "name": "Pallet shore",
+      "map": "kanto_3_0",
+      "land": {
+        "x": 7,
+        "y": 16,
+        "elevation": 3,
+        "collision": 0,
+        "behavior": 0,
+        "objects": []
+      },
+      "water": {
+        "x": 7,
+        "y": 17,
+        "elevation": 1,
+        "collision": 0,
+        "behavior": 21,
+        "objects": []
+      }
+    },
+    {
+      "name": "Route 31 shore",
+      "map": "johto_1_7",
+      "land": {
+        "x": 26,
+        "y": 5,
+        "elevation": 3,
+        "collision": 0,
+        "behavior": 0,
+        "objects": []
+      },
+      "water": {
+        "x": 26,
+        "y": 6,
+        "elevation": 1,
+        "collision": 0,
+        "behavior": 21,
+        "objects": []
+      }
+    },
+    {
+      "name": "S.S. Anne rail",
+      "map": "kanto_1_4",
+      "land": {
+        "x": 47,
+        "y": 2,
+        "elevation": 3,
+        "collision": 0,
+        "behavior": 0,
+        "objects": []
+      },
+      "water": {
+        "x": 47,
+        "y": 1,
+        "elevation": 0,
+        "collision": 1,
+        "behavior": 21,
+        "objects": []
+      }
+    },
+    {
+      "name": "Cinnabar occupied water",
+      "map": "kanto_3_8",
+      "land": {
+        "x": 22,
+        "y": 7,
+        "elevation": 3,
+        "collision": 0,
+        "behavior": 0,
+        "objects": []
+      },
+      "water": {
+        "x": 23,
+        "y": 7,
+        "elevation": 1,
+        "collision": 0,
+        "behavior": 21,
+        "objects": [
+          4
+        ]
+      }
+    },
+    {
+      "name": "Safari raised bank",
+      "map": "kanto_1_64",
+      "land": {
+        "x": 35,
+        "y": 17,
+        "elevation": 4,
+        "collision": 0,
+        "behavior": 0,
+        "objects": []
+      },
+      "water": {
+        "x": 35,
+        "y": 16,
+        "elevation": 1,
+        "collision": 0,
+        "behavior": 21,
+        "objects": []
+      }
+    }
+  ]
+}

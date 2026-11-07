@@ -1,0 +1,9 @@
+{
+  "pack": "70d6bc69ad95f4c9fc9afabc",
+  "checks": "passed",
+  "mapsAudited": 425,
+  "nativeInventoryRecords": 299,
+  "visiblePickups": 167,
+  "hiddenItemCaches": 171,
+  "hiddenCoinCaches": 12
+}

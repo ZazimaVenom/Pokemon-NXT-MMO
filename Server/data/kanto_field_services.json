@@ -1,0 +1,2603 @@
+{
+  "format": 1,
+  "sourceSha256": "729041b940afe031302d630fdbe57c0c145f3f7b6d9b8eca5e98678d0ca4d059",
+  "doors": [
+    {
+      "id": "silph_card_1",
+      "map": "kanto_1_48",
+      "sourceFlag": 634,
+      "tiles": [
+        [
+          5,
+          8
+        ],
+        [
+          6,
+          8
+        ],
+        [
+          5,
+          9
+        ],
+        [
+          6,
+          9
+        ]
+      ],
+      "sourceScript": "0x1a8993",
+      "openTiles": [
+        {
+          "x": 5,
+          "y": 8,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 6,
+          "y": 8,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 5,
+          "y": 9,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 6,
+          "y": 9,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 6,
+          "y": 10,
+          "metatile": 820,
+          "collision": 0
+        }
+      ]
+    },
+    {
+      "id": "silph_card_2",
+      "map": "kanto_1_48",
+      "sourceFlag": 635,
+      "tiles": [
+        [
+          5,
+          15
+        ],
+        [
+          6,
+          15
+        ],
+        [
+          5,
+          16
+        ],
+        [
+          6,
+          16
+        ]
+      ],
+      "sourceScript": "0x1a89ad",
+      "openTiles": [
+        {
+          "x": 5,
+          "y": 15,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 6,
+          "y": 15,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 5,
+          "y": 16,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 6,
+          "y": 16,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 6,
+          "y": 17,
+          "metatile": 820,
+          "collision": 0
+        }
+      ]
+    },
+    {
+      "id": "silph_card_3",
+      "map": "kanto_1_49",
+      "sourceFlag": 636,
+      "tiles": [
+        [
+          10,
+          12
+        ],
+        [
+          10,
+          13
+        ],
+        [
+          9,
+          12
+        ],
+        [
+          9,
+          13
+        ]
+      ],
+      "sourceScript": "0x1a89c7",
+      "openTiles": [
+        {
+          "x": 9,
+          "y": 11,
+          "metatile": 839,
+          "collision": 1
+        },
+        {
+          "x": 10,
+          "y": 11,
+          "metatile": 838,
+          "collision": 1
+        },
+        {
+          "x": 9,
+          "y": 12,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 10,
+          "y": 12,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 9,
+          "y": 13,
+          "metatile": 825,
+          "collision": 0
+        },
+        {
+          "x": 10,
+          "y": 13,
+          "metatile": 826,
+          "collision": 0
+        }
+      ]
+    },
+    {
+      "id": "silph_card_4",
+      "map": "kanto_1_49",
+      "sourceFlag": 637,
+      "tiles": [
+        [
+          21,
+          12
+        ],
+        [
+          21,
+          13
+        ],
+        [
+          20,
+          12
+        ],
+        [
+          20,
+          13
+        ]
+      ],
+      "sourceScript": "0x1a89e1",
+      "openTiles": [
+        {
+          "x": 20,
+          "y": 11,
+          "metatile": 839,
+          "collision": 1
+        },
+        {
+          "x": 21,
+          "y": 11,
+          "metatile": 838,
+          "collision": 1
+        },
+        {
+          "x": 20,
+          "y": 12,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 21,
+          "y": 12,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 20,
+          "y": 13,
+          "metatile": 825,
+          "collision": 0
+        },
+        {
+          "x": 21,
+          "y": 13,
+          "metatile": 826,
+          "collision": 0
+        }
+      ]
+    },
+    {
+      "id": "silph_card_5",
+      "map": "kanto_1_50",
+      "sourceFlag": 638,
+      "tiles": [
+        [
+          3,
+          16
+        ],
+        [
+          4,
+          16
+        ],
+        [
+          3,
+          17
+        ],
+        [
+          4,
+          17
+        ]
+      ],
+      "sourceScript": "0x1a89fb",
+      "openTiles": [
+        {
+          "x": 3,
+          "y": 16,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 4,
+          "y": 16,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 3,
+          "y": 17,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 4,
+          "y": 17,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 4,
+          "y": 18,
+          "metatile": 820,
+          "collision": 0
+        }
+      ]
+    },
+    {
+      "id": "silph_card_6",
+      "map": "kanto_1_50",
+      "sourceFlag": 639,
+      "tiles": [
+        [
+          15,
+          11
+        ],
+        [
+          14,
+          11
+        ],
+        [
+          14,
+          12
+        ],
+        [
+          15,
+          12
+        ]
+      ],
+      "sourceScript": "0x1a8a15",
+      "openTiles": [
+        {
+          "x": 14,
+          "y": 11,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 15,
+          "y": 11,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 14,
+          "y": 12,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 15,
+          "y": 12,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 15,
+          "y": 13,
+          "metatile": 820,
+          "collision": 0
+        }
+      ]
+    },
+    {
+      "id": "silph_card_7",
+      "map": "kanto_1_51",
+      "sourceFlag": 640,
+      "tiles": [
+        [
+          8,
+          9
+        ],
+        [
+          8,
+          10
+        ],
+        [
+          7,
+          9
+        ],
+        [
+          7,
+          10
+        ]
+      ],
+      "sourceScript": "0x1a8a2f",
+      "openTiles": [
+        {
+          "x": 7,
+          "y": 8,
+          "metatile": 839,
+          "collision": 1
+        },
+        {
+          "x": 8,
+          "y": 8,
+          "metatile": 838,
+          "collision": 1
+        },
+        {
+          "x": 7,
+          "y": 9,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 8,
+          "y": 9,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 7,
+          "y": 10,
+          "metatile": 825,
+          "collision": 0
+        },
+        {
+          "x": 8,
+          "y": 10,
+          "metatile": 826,
+          "collision": 0
+        }
+      ]
+    },
+    {
+      "id": "silph_card_8",
+      "map": "kanto_1_51",
+      "sourceFlag": 641,
+      "tiles": [
+        [
+          8,
+          18
+        ],
+        [
+          8,
+          19
+        ],
+        [
+          7,
+          19
+        ],
+        [
+          7,
+          18
+        ]
+      ],
+      "sourceScript": "0x1a8a49",
+      "openTiles": [
+        {
+          "x": 7,
+          "y": 17,
+          "metatile": 839,
+          "collision": 1
+        },
+        {
+          "x": 8,
+          "y": 17,
+          "metatile": 838,
+          "collision": 1
+        },
+        {
+          "x": 7,
+          "y": 18,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 8,
+          "y": 18,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 7,
+          "y": 19,
+          "metatile": 825,
+          "collision": 0
+        },
+        {
+          "x": 8,
+          "y": 19,
+          "metatile": 826,
+          "collision": 0
+        }
+      ]
+    },
+    {
+      "id": "silph_card_9",
+      "map": "kanto_1_51",
+      "sourceFlag": 642,
+      "tiles": [
+        [
+          19,
+          13
+        ],
+        [
+          19,
+          14
+        ],
+        [
+          18,
+          13
+        ],
+        [
+          18,
+          14
+        ]
+      ],
+      "sourceScript": "0x1a8a63",
+      "openTiles": [
+        {
+          "x": 18,
+          "y": 12,
+          "metatile": 839,
+          "collision": 1
+        },
+        {
+          "x": 19,
+          "y": 12,
+          "metatile": 838,
+          "collision": 1
+        },
+        {
+          "x": 18,
+          "y": 13,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 19,
+          "y": 13,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 18,
+          "y": 14,
+          "metatile": 825,
+          "collision": 0
+        },
+        {
+          "x": 19,
+          "y": 14,
+          "metatile": 826,
+          "collision": 0
+        }
+      ]
+    },
+    {
+      "id": "silph_card_10",
+      "map": "kanto_1_52",
+      "sourceFlag": 643,
+      "tiles": [
+        [
+          6,
+          15
+        ],
+        [
+          6,
+          16
+        ],
+        [
+          5,
+          15
+        ],
+        [
+          5,
+          16
+        ]
+      ],
+      "sourceScript": "0x1a8a7d",
+      "openTiles": [
+        {
+          "x": 5,
+          "y": 14,
+          "metatile": 839,
+          "collision": 1
+        },
+        {
+          "x": 6,
+          "y": 14,
+          "metatile": 838,
+          "collision": 1
+        },
+        {
+          "x": 5,
+          "y": 15,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 6,
+          "y": 15,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 5,
+          "y": 16,
+          "metatile": 825,
+          "collision": 0
+        },
+        {
+          "x": 6,
+          "y": 16,
+          "metatile": 826,
+          "collision": 0
+        }
+      ]
+    },
+    {
+      "id": "silph_card_11",
+      "map": "kanto_1_53",
+      "sourceFlag": 644,
+      "tiles": [
+        [
+          11,
+          8
+        ],
+        [
+          12,
+          8
+        ],
+        [
+          11,
+          9
+        ],
+        [
+          12,
+          9
+        ]
+      ],
+      "sourceScript": "0x1a8a97",
+      "openTiles": [
+        {
+          "x": 11,
+          "y": 8,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 12,
+          "y": 8,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 11,
+          "y": 9,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 12,
+          "y": 9,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 12,
+          "y": 10,
+          "metatile": 820,
+          "collision": 0
+        }
+      ]
+    },
+    {
+      "id": "silph_card_12",
+      "map": "kanto_1_53",
+      "sourceFlag": 645,
+      "tiles": [
+        [
+          24,
+          7
+        ],
+        [
+          25,
+          7
+        ],
+        [
+          25,
+          8
+        ],
+        [
+          24,
+          8
+        ]
+      ],
+      "sourceScript": "0x1a8ab1",
+      "openTiles": [
+        {
+          "x": 24,
+          "y": 7,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 25,
+          "y": 7,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 24,
+          "y": 8,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 25,
+          "y": 8,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 25,
+          "y": 9,
+          "metatile": 820,
+          "collision": 0
+        }
+      ]
+    },
+    {
+      "id": "silph_card_13",
+      "map": "kanto_1_53",
+      "sourceFlag": 646,
+      "tiles": [
+        [
+          25,
+          13
+        ],
+        [
+          26,
+          13
+        ],
+        [
+          25,
+          14
+        ],
+        [
+          26,
+          14
+        ]
+      ],
+      "sourceScript": "0x1a8acb",
+      "openTiles": [
+        {
+          "x": 25,
+          "y": 13,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 26,
+          "y": 13,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 25,
+          "y": 14,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 26,
+          "y": 14,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 26,
+          "y": 15,
+          "metatile": 820,
+          "collision": 0
+        }
+      ]
+    },
+    {
+      "id": "silph_card_14",
+      "map": "kanto_1_54",
+      "sourceFlag": 647,
+      "tiles": [
+        [
+          6,
+          10
+        ],
+        [
+          6,
+          11
+        ],
+        [
+          5,
+          11
+        ],
+        [
+          5,
+          10
+        ]
+      ],
+      "sourceScript": "0x1a8ae5",
+      "openTiles": [
+        {
+          "x": 5,
+          "y": 9,
+          "metatile": 839,
+          "collision": 1
+        },
+        {
+          "x": 6,
+          "y": 9,
+          "metatile": 838,
+          "collision": 1
+        },
+        {
+          "x": 5,
+          "y": 10,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 6,
+          "y": 10,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 5,
+          "y": 11,
+          "metatile": 825,
+          "collision": 0
+        },
+        {
+          "x": 6,
+          "y": 11,
+          "metatile": 826,
+          "collision": 0
+        }
+      ]
+    },
+    {
+      "id": "silph_card_15",
+      "map": "kanto_1_55",
+      "sourceFlag": 648,
+      "tiles": [
+        [
+          3,
+          10
+        ],
+        [
+          3,
+          11
+        ],
+        [
+          2,
+          11
+        ],
+        [
+          2,
+          10
+        ]
+      ],
+      "sourceScript": "0x1a8aff",
+      "openTiles": [
+        {
+          "x": 2,
+          "y": 9,
+          "metatile": 839,
+          "collision": 1
+        },
+        {
+          "x": 3,
+          "y": 9,
+          "metatile": 838,
+          "collision": 1
+        },
+        {
+          "x": 2,
+          "y": 10,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 3,
+          "y": 10,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 2,
+          "y": 11,
+          "metatile": 825,
+          "collision": 0
+        },
+        {
+          "x": 3,
+          "y": 11,
+          "metatile": 826,
+          "collision": 0
+        }
+      ]
+    },
+    {
+      "id": "silph_card_16",
+      "map": "kanto_1_55",
+      "sourceFlag": 649,
+      "tiles": [
+        [
+          13,
+          16
+        ],
+        [
+          13,
+          17
+        ],
+        [
+          12,
+          16
+        ],
+        [
+          12,
+          17
+        ]
+      ],
+      "sourceScript": "0x1a8b19",
+      "openTiles": [
+        {
+          "x": 12,
+          "y": 15,
+          "metatile": 839,
+          "collision": 1
+        },
+        {
+          "x": 13,
+          "y": 15,
+          "metatile": 838,
+          "collision": 1
+        },
+        {
+          "x": 12,
+          "y": 16,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 13,
+          "y": 16,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 12,
+          "y": 17,
+          "metatile": 825,
+          "collision": 0
+        },
+        {
+          "x": 13,
+          "y": 17,
+          "metatile": 826,
+          "collision": 0
+        }
+      ]
+    },
+    {
+      "id": "silph_card_17",
+      "map": "kanto_1_55",
+      "sourceFlag": 650,
+      "tiles": [
+        [
+          21,
+          6
+        ],
+        [
+          22,
+          6
+        ],
+        [
+          22,
+          7
+        ],
+        [
+          21,
+          7
+        ]
+      ],
+      "sourceScript": "0x1a8b33",
+      "openTiles": [
+        {
+          "x": 21,
+          "y": 6,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 22,
+          "y": 6,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 21,
+          "y": 7,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 22,
+          "y": 7,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 22,
+          "y": 8,
+          "metatile": 820,
+          "collision": 0
+        }
+      ]
+    },
+    {
+      "id": "silph_card_18",
+      "map": "kanto_1_55",
+      "sourceFlag": 651,
+      "tiles": [
+        [
+          21,
+          13
+        ],
+        [
+          21,
+          12
+        ],
+        [
+          22,
+          12
+        ],
+        [
+          22,
+          13
+        ]
+      ],
+      "sourceScript": "0x1a8b4d",
+      "openTiles": [
+        {
+          "x": 21,
+          "y": 12,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 22,
+          "y": 12,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 21,
+          "y": 13,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 22,
+          "y": 13,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 22,
+          "y": 14,
+          "metatile": 820,
+          "collision": 0
+        }
+      ]
+    },
+    {
+      "id": "silph_card_19",
+      "map": "kanto_1_56",
+      "sourceFlag": 652,
+      "tiles": [
+        [
+          12,
+          11
+        ],
+        [
+          13,
+          11
+        ],
+        [
+          12,
+          12
+        ],
+        [
+          13,
+          12
+        ]
+      ],
+      "sourceScript": "0x1a8b67",
+      "openTiles": [
+        {
+          "x": 12,
+          "y": 11,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 13,
+          "y": 11,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 12,
+          "y": 12,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 13,
+          "y": 12,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 13,
+          "y": 13,
+          "metatile": 820,
+          "collision": 0
+        }
+      ]
+    },
+    {
+      "id": "silph_card_20",
+      "map": "kanto_1_57",
+      "sourceFlag": 653,
+      "tiles": [
+        [
+          5,
+          16
+        ],
+        [
+          5,
+          17
+        ],
+        [
+          6,
+          16
+        ],
+        [
+          6,
+          17
+        ]
+      ],
+      "sourceScript": "0x1a8b81",
+      "openTiles": [
+        {
+          "x": 5,
+          "y": 16,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 6,
+          "y": 16,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 5,
+          "y": 17,
+          "metatile": 821,
+          "collision": 0
+        },
+        {
+          "x": 6,
+          "y": 17,
+          "metatile": 820,
+          "collision": 0
+        },
+        {
+          "x": 6,
+          "y": 18,
+          "metatile": 820,
+          "collision": 0
+        }
+      ]
+    }
+  ],
+  "coinPrizes": [
+    {
+      "kind": "pokemon",
+      "sourceId": 63,
+      "coins": 180,
+      "npc": 3,
+      "sourceScript": "0x16cc8d",
+      "level": 9
+    },
+    {
+      "kind": "pokemon",
+      "sourceId": 35,
+      "coins": 500,
+      "npc": 3,
+      "sourceScript": "0x16cc9d",
+      "level": 8
+    },
+    {
+      "kind": "pokemon",
+      "sourceId": 147,
+      "coins": 2800,
+      "npc": 3,
+      "sourceScript": "0x16ccad",
+      "level": 18
+    },
+    {
+      "kind": "pokemon",
+      "sourceId": 123,
+      "coins": 5500,
+      "npc": 3,
+      "sourceScript": "0x16ccbd",
+      "level": 25
+    },
+    {
+      "kind": "pokemon",
+      "sourceId": 137,
+      "coins": 9999,
+      "npc": 3,
+      "sourceScript": "0x16cccd",
+      "level": 26
+    },
+    {
+      "kind": "item",
+      "sourceId": 301,
+      "coins": 4000,
+      "npc": 4,
+      "sourceScript": "0x16cf1d"
+    },
+    {
+      "kind": "item",
+      "sourceId": 311,
+      "coins": 3500,
+      "npc": 4,
+      "sourceScript": "0x16cf31"
+    },
+    {
+      "kind": "item",
+      "sourceId": 312,
+      "coins": 4000,
+      "npc": 4,
+      "sourceScript": "0x16cf45"
+    },
+    {
+      "kind": "item",
+      "sourceId": 318,
+      "coins": 4500,
+      "npc": 4,
+      "sourceScript": "0x16cf59"
+    },
+    {
+      "kind": "item",
+      "sourceId": 323,
+      "coins": 4000,
+      "npc": 4,
+      "sourceScript": "0x16cf6d"
+    },
+    {
+      "kind": "item",
+      "sourceId": 194,
+      "coins": 800,
+      "npc": 5,
+      "sourceScript": "0x16d088"
+    },
+    {
+      "kind": "item",
+      "sourceId": 205,
+      "coins": 1000,
+      "npc": 5,
+      "sourceScript": "0x16d098"
+    },
+    {
+      "kind": "item",
+      "sourceId": 215,
+      "coins": 1000,
+      "npc": 5,
+      "sourceScript": "0x16d0a8"
+    },
+    {
+      "kind": "item",
+      "sourceId": 209,
+      "coins": 1000,
+      "npc": 5,
+      "sourceScript": "0x16d0b8"
+    },
+    {
+      "kind": "item",
+      "sourceId": 40,
+      "coins": 1600,
+      "npc": 5,
+      "sourceScript": "0x16d0c8"
+    }
+  ],
+  "trainerDoors": [
+    {
+      "map": "kanto_1_45",
+      "requiredTrainerIds": [
+        366,
+        367
+      ],
+      "tiles": [
+        [
+          17,
+          12
+        ],
+        [
+          18,
+          12
+        ],
+        [
+          17,
+          13
+        ],
+        [
+          18,
+          13
+        ],
+        [
+          17,
+          14
+        ],
+        [
+          18,
+          14
+        ]
+      ],
+      "openTiles": [
+        {
+          "x": 17,
+          "y": 12,
+          "metatile": 642,
+          "collision": 0
+        },
+        {
+          "x": 18,
+          "y": 12,
+          "metatile": 641,
+          "collision": 0
+        },
+        {
+          "x": 17,
+          "y": 13,
+          "metatile": 642,
+          "collision": 0
+        },
+        {
+          "x": 18,
+          "y": 13,
+          "metatile": 641,
+          "collision": 0
+        },
+        {
+          "x": 17,
+          "y": 14,
+          "metatile": 642,
+          "collision": 0
+        },
+        {
+          "x": 18,
+          "y": 14,
+          "metatile": 641,
+          "collision": 0
+        }
+      ],
+      "sourceScript": "0x161519"
+    }
+  ],
+  "mansionSwitches": [
+    {
+      "map": "kanto_1_59",
+      "switches": [
+        [
+          5,
+          5
+        ]
+      ],
+      "sourceFlag": 620,
+      "on": [
+        {
+          "x": 22,
+          "y": 10,
+          "metatile": 645,
+          "collision": 0
+        },
+        {
+          "x": 23,
+          "y": 10,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 24,
+          "y": 10,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 22,
+          "y": 11,
+          "metatile": 645,
+          "collision": 0
+        },
+        {
+          "x": 23,
+          "y": 11,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 24,
+          "y": 11,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 27,
+          "y": 25,
+          "metatile": 645,
+          "collision": 0
+        },
+        {
+          "x": 28,
+          "y": 25,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 29,
+          "y": 25,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 27,
+          "y": 26,
+          "metatile": 645,
+          "collision": 0
+        },
+        {
+          "x": 28,
+          "y": 26,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 29,
+          "y": 26,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 32,
+          "y": 25,
+          "metatile": 645,
+          "collision": 0
+        },
+        {
+          "x": 33,
+          "y": 25,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 34,
+          "y": 25,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 32,
+          "y": 26,
+          "metatile": 645,
+          "collision": 0
+        },
+        {
+          "x": 33,
+          "y": 26,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 34,
+          "y": 26,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 31,
+          "y": 18,
+          "metatile": 760,
+          "collision": 1
+        },
+        {
+          "x": 32,
+          "y": 18,
+          "metatile": 761,
+          "collision": 1
+        },
+        {
+          "x": 33,
+          "y": 18,
+          "metatile": 762,
+          "collision": 1
+        },
+        {
+          "x": 31,
+          "y": 19,
+          "metatile": 768,
+          "collision": 1
+        },
+        {
+          "x": 32,
+          "y": 19,
+          "metatile": 769,
+          "collision": 1
+        },
+        {
+          "x": 33,
+          "y": 19,
+          "metatile": 770,
+          "collision": 1
+        },
+        {
+          "x": 5,
+          "y": 4,
+          "metatile": 845,
+          "collision": 0
+        }
+      ],
+      "off": [
+        {
+          "x": 22,
+          "y": 10,
+          "metatile": 760,
+          "collision": 1
+        },
+        {
+          "x": 23,
+          "y": 10,
+          "metatile": 761,
+          "collision": 1
+        },
+        {
+          "x": 24,
+          "y": 10,
+          "metatile": 762,
+          "collision": 1
+        },
+        {
+          "x": 22,
+          "y": 11,
+          "metatile": 768,
+          "collision": 1
+        },
+        {
+          "x": 23,
+          "y": 11,
+          "metatile": 769,
+          "collision": 1
+        },
+        {
+          "x": 24,
+          "y": 11,
+          "metatile": 770,
+          "collision": 1
+        },
+        {
+          "x": 27,
+          "y": 25,
+          "metatile": 760,
+          "collision": 1
+        },
+        {
+          "x": 28,
+          "y": 25,
+          "metatile": 761,
+          "collision": 1
+        },
+        {
+          "x": 29,
+          "y": 25,
+          "metatile": 762,
+          "collision": 1
+        },
+        {
+          "x": 27,
+          "y": 26,
+          "metatile": 768,
+          "collision": 1
+        },
+        {
+          "x": 28,
+          "y": 26,
+          "metatile": 769,
+          "collision": 1
+        },
+        {
+          "x": 29,
+          "y": 26,
+          "metatile": 770,
+          "collision": 1
+        },
+        {
+          "x": 32,
+          "y": 25,
+          "metatile": 760,
+          "collision": 1
+        },
+        {
+          "x": 33,
+          "y": 25,
+          "metatile": 761,
+          "collision": 1
+        },
+        {
+          "x": 34,
+          "y": 25,
+          "metatile": 762,
+          "collision": 1
+        },
+        {
+          "x": 32,
+          "y": 26,
+          "metatile": 768,
+          "collision": 1
+        },
+        {
+          "x": 33,
+          "y": 26,
+          "metatile": 769,
+          "collision": 1
+        },
+        {
+          "x": 34,
+          "y": 26,
+          "metatile": 770,
+          "collision": 1
+        },
+        {
+          "x": 31,
+          "y": 18,
+          "metatile": 645,
+          "collision": 0
+        },
+        {
+          "x": 32,
+          "y": 18,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 33,
+          "y": 18,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 31,
+          "y": 19,
+          "metatile": 645,
+          "collision": 0
+        },
+        {
+          "x": 32,
+          "y": 19,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 33,
+          "y": 19,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 5,
+          "y": 4,
+          "metatile": 788,
+          "collision": 0
+        }
+      ],
+      "sourceScripts": [
+        "0x1a7bf2",
+        "0x1a7cd4"
+      ]
+    },
+    {
+      "map": "kanto_1_60",
+      "switches": [
+        [
+          2,
+          16
+        ]
+      ],
+      "sourceFlag": 620,
+      "on": [
+        {
+          "x": 24,
+          "y": 14,
+          "metatile": 645,
+          "collision": 0
+        },
+        {
+          "x": 25,
+          "y": 14,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 26,
+          "y": 14,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 24,
+          "y": 15,
+          "metatile": 645,
+          "collision": 0
+        },
+        {
+          "x": 25,
+          "y": 15,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 26,
+          "y": 15,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 10,
+          "y": 28,
+          "metatile": 677,
+          "collision": 1
+        },
+        {
+          "x": 10,
+          "y": 29,
+          "metatile": 685,
+          "collision": 1
+        },
+        {
+          "x": 10,
+          "y": 30,
+          "metatile": 645,
+          "collision": 0
+        },
+        {
+          "x": 10,
+          "y": 31,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 10,
+          "y": 32,
+          "metatile": 693,
+          "collision": 0
+        },
+        {
+          "x": 12,
+          "y": 4,
+          "metatile": 848,
+          "collision": 1
+        },
+        {
+          "x": 12,
+          "y": 5,
+          "metatile": 856,
+          "collision": 1
+        },
+        {
+          "x": 12,
+          "y": 6,
+          "metatile": 864,
+          "collision": 1
+        },
+        {
+          "x": 12,
+          "y": 7,
+          "metatile": 872,
+          "collision": 1
+        },
+        {
+          "x": 12,
+          "y": 8,
+          "metatile": 880,
+          "collision": 1
+        },
+        {
+          "x": 2,
+          "y": 15,
+          "metatile": 845,
+          "collision": 0
+        }
+      ],
+      "off": [
+        {
+          "x": 24,
+          "y": 14,
+          "metatile": 760,
+          "collision": 1
+        },
+        {
+          "x": 25,
+          "y": 14,
+          "metatile": 761,
+          "collision": 1
+        },
+        {
+          "x": 26,
+          "y": 14,
+          "metatile": 762,
+          "collision": 1
+        },
+        {
+          "x": 24,
+          "y": 15,
+          "metatile": 768,
+          "collision": 1
+        },
+        {
+          "x": 25,
+          "y": 15,
+          "metatile": 769,
+          "collision": 1
+        },
+        {
+          "x": 26,
+          "y": 15,
+          "metatile": 770,
+          "collision": 1
+        },
+        {
+          "x": 10,
+          "y": 28,
+          "metatile": 848,
+          "collision": 1
+        },
+        {
+          "x": 10,
+          "y": 29,
+          "metatile": 856,
+          "collision": 1
+        },
+        {
+          "x": 10,
+          "y": 30,
+          "metatile": 864,
+          "collision": 1
+        },
+        {
+          "x": 10,
+          "y": 31,
+          "metatile": 872,
+          "collision": 1
+        },
+        {
+          "x": 10,
+          "y": 32,
+          "metatile": 880,
+          "collision": 1
+        },
+        {
+          "x": 12,
+          "y": 4,
+          "metatile": 677,
+          "collision": 1
+        },
+        {
+          "x": 12,
+          "y": 5,
+          "metatile": 685,
+          "collision": 1
+        },
+        {
+          "x": 12,
+          "y": 6,
+          "metatile": 645,
+          "collision": 0
+        },
+        {
+          "x": 12,
+          "y": 7,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 12,
+          "y": 8,
+          "metatile": 693,
+          "collision": 0
+        },
+        {
+          "x": 2,
+          "y": 15,
+          "metatile": 788,
+          "collision": 0
+        }
+      ],
+      "sourceScripts": [
+        "0x1a7db6",
+        "0x1a7e50"
+      ]
+    },
+    {
+      "map": "kanto_1_61",
+      "switches": [
+        [
+          12,
+          5
+        ]
+      ],
+      "sourceFlag": 620,
+      "on": [
+        {
+          "x": 17,
+          "y": 11,
+          "metatile": 645,
+          "collision": 0
+        },
+        {
+          "x": 18,
+          "y": 11,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 19,
+          "y": 11,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 17,
+          "y": 12,
+          "metatile": 645,
+          "collision": 0
+        },
+        {
+          "x": 18,
+          "y": 12,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 19,
+          "y": 12,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 21,
+          "y": 4,
+          "metatile": 848,
+          "collision": 1
+        },
+        {
+          "x": 21,
+          "y": 5,
+          "metatile": 856,
+          "collision": 1
+        },
+        {
+          "x": 21,
+          "y": 6,
+          "metatile": 864,
+          "collision": 1
+        },
+        {
+          "x": 21,
+          "y": 7,
+          "metatile": 872,
+          "collision": 1
+        },
+        {
+          "x": 21,
+          "y": 8,
+          "metatile": 880,
+          "collision": 1
+        },
+        {
+          "x": 12,
+          "y": 4,
+          "metatile": 845,
+          "collision": 0
+        }
+      ],
+      "off": [
+        {
+          "x": 17,
+          "y": 11,
+          "metatile": 760,
+          "collision": 1
+        },
+        {
+          "x": 18,
+          "y": 11,
+          "metatile": 761,
+          "collision": 1
+        },
+        {
+          "x": 19,
+          "y": 11,
+          "metatile": 762,
+          "collision": 1
+        },
+        {
+          "x": 17,
+          "y": 12,
+          "metatile": 768,
+          "collision": 1
+        },
+        {
+          "x": 18,
+          "y": 12,
+          "metatile": 769,
+          "collision": 1
+        },
+        {
+          "x": 19,
+          "y": 12,
+          "metatile": 770,
+          "collision": 1
+        },
+        {
+          "x": 21,
+          "y": 4,
+          "metatile": 677,
+          "collision": 1
+        },
+        {
+          "x": 21,
+          "y": 5,
+          "metatile": 685,
+          "collision": 1
+        },
+        {
+          "x": 21,
+          "y": 6,
+          "metatile": 645,
+          "collision": 0
+        },
+        {
+          "x": 21,
+          "y": 7,
+          "metatile": 644,
+          "collision": 0
+        },
+        {
+          "x": 21,
+          "y": 8,
+          "metatile": 693,
+          "collision": 0
+        },
+        {
+          "x": 12,
+          "y": 4,
+          "metatile": 788,
+          "collision": 0
+        }
+      ],
+      "sourceScripts": [
+        "0x1a7eea",
+        "0x1a7f57"
+      ]
+    },
+    {
+      "map": "kanto_1_62",
+      "switches": [
+        [
+          24,
+          29
+        ],
+        [
+          27,
+          5
+        ]
+      ],
+      "sourceFlag": 620,
+      "on": [
+        {
+          "x": 33,
+          "y": 20,
+          "metatile": 760,
+          "collision": 1
+        },
+        {
+          "x": 34,
+          "y": 20,
+          "metatile": 761,
+          "collision": 1
+        },
+        {
+          "x": 35,
+          "y": 20,
+          "metatile": 762,
+          "collision": 1
+        },
+        {
+          "x": 33,
+          "y": 21,
+          "metatile": 852,
+          "collision": 1
+        },
+        {
+          "x": 34,
+          "y": 21,
+          "metatile": 853,
+          "collision": 1
+        },
+        {
+          "x": 35,
+          "y": 21,
+          "metatile": 854,
+          "collision": 1
+        },
+        {
+          "x": 16,
+          "y": 26,
+          "metatile": 848,
+          "collision": 1
+        },
+        {
+          "x": 16,
+          "y": 27,
+          "metatile": 856,
+          "collision": 1
+        },
+        {
+          "x": 16,
+          "y": 28,
+          "metatile": 866,
+          "collision": 1
+        },
+        {
+          "x": 16,
+          "y": 29,
+          "metatile": 874,
+          "collision": 1
+        },
+        {
+          "x": 16,
+          "y": 30,
+          "metatile": 882,
+          "collision": 1
+        },
+        {
+          "x": 12,
+          "y": 8,
+          "metatile": 677,
+          "collision": 1
+        },
+        {
+          "x": 12,
+          "y": 9,
+          "metatile": 685,
+          "collision": 1
+        },
+        {
+          "x": 12,
+          "y": 10,
+          "metatile": 647,
+          "collision": 0
+        },
+        {
+          "x": 12,
+          "y": 11,
+          "metatile": 646,
+          "collision": 0
+        },
+        {
+          "x": 12,
+          "y": 12,
+          "metatile": 688,
+          "collision": 0
+        },
+        {
+          "x": 20,
+          "y": 22,
+          "metatile": 647,
+          "collision": 0
+        },
+        {
+          "x": 21,
+          "y": 22,
+          "metatile": 646,
+          "collision": 0
+        },
+        {
+          "x": 22,
+          "y": 22,
+          "metatile": 646,
+          "collision": 0
+        },
+        {
+          "x": 20,
+          "y": 23,
+          "metatile": 647,
+          "collision": 0
+        },
+        {
+          "x": 21,
+          "y": 23,
+          "metatile": 646,
+          "collision": 0
+        },
+        {
+          "x": 22,
+          "y": 23,
+          "metatile": 646,
+          "collision": 0
+        },
+        {
+          "x": 24,
+          "y": 28,
+          "metatile": 847,
+          "collision": 0
+        },
+        {
+          "x": 27,
+          "y": 4,
+          "metatile": 847,
+          "collision": 0
+        }
+      ],
+      "off": [
+        {
+          "x": 33,
+          "y": 20,
+          "metatile": 647,
+          "collision": 0
+        },
+        {
+          "x": 34,
+          "y": 20,
+          "metatile": 646,
+          "collision": 0
+        },
+        {
+          "x": 35,
+          "y": 20,
+          "metatile": 646,
+          "collision": 0
+        },
+        {
+          "x": 33,
+          "y": 21,
+          "metatile": 647,
+          "collision": 0
+        },
+        {
+          "x": 34,
+          "y": 21,
+          "metatile": 646,
+          "collision": 0
+        },
+        {
+          "x": 35,
+          "y": 21,
+          "metatile": 646,
+          "collision": 0
+        },
+        {
+          "x": 16,
+          "y": 26,
+          "metatile": 677,
+          "collision": 1
+        },
+        {
+          "x": 16,
+          "y": 27,
+          "metatile": 685,
+          "collision": 1
+        },
+        {
+          "x": 16,
+          "y": 28,
+          "metatile": 647,
+          "collision": 0
+        },
+        {
+          "x": 16,
+          "y": 29,
+          "metatile": 646,
+          "collision": 0
+        },
+        {
+          "x": 16,
+          "y": 30,
+          "metatile": 688,
+          "collision": 0
+        },
+        {
+          "x": 12,
+          "y": 8,
+          "metatile": 848,
+          "collision": 1
+        },
+        {
+          "x": 12,
+          "y": 9,
+          "metatile": 856,
+          "collision": 1
+        },
+        {
+          "x": 12,
+          "y": 10,
+          "metatile": 866,
+          "collision": 1
+        },
+        {
+          "x": 12,
+          "y": 11,
+          "metatile": 874,
+          "collision": 1
+        },
+        {
+          "x": 12,
+          "y": 12,
+          "metatile": 882,
+          "collision": 1
+        },
+        {
+          "x": 20,
+          "y": 22,
+          "metatile": 760,
+          "collision": 1
+        },
+        {
+          "x": 21,
+          "y": 22,
+          "metatile": 761,
+          "collision": 1
+        },
+        {
+          "x": 22,
+          "y": 22,
+          "metatile": 762,
+          "collision": 1
+        },
+        {
+          "x": 20,
+          "y": 23,
+          "metatile": 852,
+          "collision": 1
+        },
+        {
+          "x": 21,
+          "y": 23,
+          "metatile": 853,
+          "collision": 1
+        },
+        {
+          "x": 22,
+          "y": 23,
+          "metatile": 854,
+          "collision": 1
+        },
+        {
+          "x": 24,
+          "y": 28,
+          "metatile": 790,
+          "collision": 0
+        },
+        {
+          "x": 27,
+          "y": 4,
+          "metatile": 790,
+          "collision": 0
+        }
+      ],
+      "sourceScripts": [
+        "0x1a7fc4",
+        "0x1a809d"
+      ]
+    }
+  ],
+  "handovers": [
+    {
+      "sourceId": 349,
+      "map": "kanto_4_3",
+      "npc": 4,
+      "flags": [
+        2089
+      ],
+      "variables": {
+        "16508": 1
+      },
+      "role": "parcel",
+      "sourceScript": "0x1696af"
+    },
+    {
+      "sourceId": 353,
+      "map": "kanto_11_7",
+      "npc": 1,
+      "flags": [
+        570
+      ],
+      "role": "goldteeth",
+      "sourceScript": "0x16d847"
+    },
+    {
+      "sourceId": 374,
+      "map": "kanto_32_0",
+      "npc": 3,
+      "flags": [
+        2116,
+        92,
+        140
+      ],
+      "variables": {
+        "16502": 6
+      },
+      "requiresSourceId": 368,
+      "role": "sapphire",
+      "sourceScript": "0x17102e"
+    },
+    {
+      "sourceId": 369,
+      "map": "kanto_17_1",
+      "npc": 1,
+      "flags": [],
+      "variables": {
+        "16482": 1
+      },
+      "role": "tea",
+      "sourceScript": "0x16f9d0"
+    },
+    {
+      "sourceId": 369,
+      "map": "kanto_18_0",
+      "npc": 1,
+      "flags": [],
+      "variables": {
+        "16482": 1
+      },
+      "role": "tea",
+      "sourceScript": "0x16fa96"
+    },
+    {
+      "sourceId": 369,
+      "map": "kanto_19_0",
+      "npc": 1,
+      "flags": [],
+      "variables": {
+        "16482": 1
+      },
+      "role": "tea",
+      "sourceScript": "0x16fb5d"
+    },
+    {
+      "sourceId": 369,
+      "map": "kanto_20_0",
+      "npc": 1,
+      "flags": [],
+      "variables": {
+        "16482": 1
+      },
+      "role": "tea",
+      "sourceScript": "0x16fc23"
+    }
+  ],
+  "elevators": [
+    {
+      "map": "kanto_1_46",
+      "sourceId": 356,
+      "panel": [
+        0,
+        2
+      ],
+      "destinations": [
+        {
+          "id": "kanto_1_42",
+          "label": "B1F",
+          "door": [
+            24,
+            25
+          ],
+          "arrival": [
+            24,
+            26
+          ],
+          "sourceScript": "0x16160e"
+        },
+        {
+          "id": "kanto_1_43",
+          "label": "B2F",
+          "door": [
+            28,
+            16
+          ],
+          "arrival": [
+            28,
+            17
+          ],
+          "sourceScript": "0x161636"
+        },
+        {
+          "id": "kanto_1_45",
+          "label": "B4F",
+          "door": [
+            20,
+            23
+          ],
+          "arrival": [
+            20,
+            24
+          ],
+          "sourceScript": "0x16165e"
+        }
+      ]
+    }
+  ],
+  "powderPrizes": [
+    {
+      "sourceId": 30,
+      "powder": 50,
+      "sourceScript": "0x16afe4"
+    },
+    {
+      "sourceId": 31,
+      "powder": 80,
+      "sourceScript": "0x16aff8"
+    },
+    {
+      "sourceId": 32,
+      "powder": 50,
+      "sourceScript": "0x16b00c"
+    },
+    {
+      "sourceId": 33,
+      "powder": 300,
+      "sourceScript": "0x16b020"
+    },
+    {
+      "sourceId": 64,
+      "powder": 1000,
+      "sourceScript": "0x16b034"
+    },
+    {
+      "sourceId": 65,
+      "powder": 1000,
+      "sourceScript": "0x16b048"
+    },
+    {
+      "sourceId": 66,
+      "powder": 1000,
+      "sourceScript": "0x16b05c"
+    },
+    {
+      "sourceId": 67,
+      "powder": 1000,
+      "sourceScript": "0x16b070"
+    },
+    {
+      "sourceId": 70,
+      "powder": 1000,
+      "sourceScript": "0x16b084"
+    },
+    {
+      "sourceId": 63,
+      "powder": 1000,
+      "sourceScript": "0x16b098"
+    },
+    {
+      "sourceId": 69,
+      "powder": 3000,
+      "sourceScript": "0x16b0ac"
+    }
+  ],
+  "fossils": [
+    {
+      "sourceId": 357,
+      "species": "fr_138",
+      "level": 5,
+      "sourceScript": "0x16e7e1"
+    },
+    {
+      "sourceId": 358,
+      "species": "fr_140",
+      "level": 5,
+      "sourceScript": "0x16e826"
+    },
+    {
+      "sourceId": 354,
+      "species": "fr_142",
+      "level": 5,
+      "sourceScript": "0x16e86b"
+    }
+  ],
+  "fossilLab": {
+    "map": "kanto_12_4",
+    "npc": 2
+  },
+  "coinCounter": {
+    "map": "kanto_10_14",
+    "npc": 2
+  },
+  "prizeCounterMap": "kanto_10_15",
+  "policy": "Revival requires leaving the lab room. Native slot/prize operands are preserved; no slot-machine gambling is simulated."
+}

@@ -1,0 +1,901 @@
+"""Single-authority world actor, spatial replication and transactional services.
+All player mutations execute under the world lock. Database calls run off-loop.
+Extensions may submit intents, never client-provided state snapshots.
+"""
+from __future__ import annotations
+import asyncio,collections,copy,hashlib,json,logging,math,time,uuid
+from dataclasses import dataclass,field
+from .security import Bucket,RequestError,require,integer
+from .combat import Battle
+from .items import ItemSystem
+from . import kanto_field,kanto_gifts,safari,kanto_obstacles,surf as surfing
+from .varieties import variety_key
+from .adventure import Adventure
+from .field_moves import CUT_REQUIREMENTS,cut_allowed,is_cut_tree,region,tree_cleared
+from .story_events import cleared as story_cleared,for_object as story_for_object,mark_cleared as mark_story_cleared
+from .encounters import encounter_slots,select_encounter
+from .ai_trainers import AutonomousTrainers
+from .portals import plan_warp,return_stack
+from .async_tasks import complete_before_cancelling
+from .dialogue import render as render_npc_dialogue
+log=logging.getLogger('nxt.world')
+DIRECTIONS={'down':(0,1,1),'up':(0,-1,2),'left':(-1,0,3),'right':(1,0,4)}
+WATER={16,17,18,19,21,26,27}
+@dataclass
+class Player:
+ id:int
+ username:str
+ state:dict
+ queue:asyncio.Queue
+ closed:bool=False
+ frozen:bool=False
+ trade_blocked:bool=False
+ connection_peer:str='unavailable'
+ battle:str|None=None
+ trade:str|None=None
+ last_move:float=0
+ last_seq:int=-1
+ last_encounter:float=0
+ fx:int=0
+ fy:int=0
+ seen:dict=field(default_factory=dict)
+ move_bucket:Bucket=field(default_factory=lambda:Bucket(12,1))
+ command_bucket:Bucket=field(default_factory=lambda:Bucket(40,1))
+ chat_bucket:Bucket=field(default_factory=lambda:Bucket(5,10))
+ muted_until:float=0
+ npc_cooldowns:dict=field(default_factory=dict)
+ saved_revision:int=0
+ audio_session:str=field(default_factory=lambda:uuid.uuid4().hex)
+ audio_sequence:int=0
+ def send(self,event_type,**data):
+  if self.closed:return
+  # The socket writer runs later. Freeze nested state now so subsequent world
+  # mutations cannot change an already queued revision, party or battle view.
+  try:self.queue.put_nowait(copy.deepcopy({'type':event_type,**data}))
+  except asyncio.QueueFull:self.closed=True
+ def audio(self,cue,**data):
+  """Owner-only, server-confirmed presentation events; never persisted in saves."""
+  self.audio_sequence+=1;key=f'{self.audio_session}:{self.audio_sequence}'
+  self.send('audio',id=key,events=[{'id':key+':0','cue':cue,'source':self.state['map'].split('_',1)[0],**data}])
+ def entity(self):
+  s=self.state;lead=next((m for m in s['creatures'] if m['uid']==s['party'][0]),None)
+  return {'id':self.id,'username':self.username,'map':s['map'],'x':s['x'],'y':s['y'],'direction':s.get('direction','down'),'appearance':s['appearance'],'follower':lead['species'] if lead else None,'shiny':variety_key(lead)=='shiny','followerVariety':variety_key(lead),'fx':self.fx,'fy':self.fy,'busy':bool(self.battle or self.trade),'surf':s.get('surf',False),'surfPokemon':surfing.public_partner(s),'bicycle':s.get('bicycle',False)}
+class World:
+ def __init__(self,content,store,settings):
+  self.c=content;self.item_system=getattr(content,'item_system',None) or ItemSystem(content);self.adventure=Adventure(content);self.db=store;self.s=settings;self.players={};self.invites={};self.trades={};self.battles={};self.lock=asyncio.Lock();self.chat={'general':collections.deque(maxlen=30),'trade':collections.deque(maxlen=30)};self.started=time.monotonic();self.ticks=0;self.last_tick_ms=0;self.max_tick_ms=0;self.extension_hooks=collections.defaultdict(list);self.stopping=False;self.autonomous=AutonomousTrainers(self)
+ def hook(self,event,callback):self.extension_hooks[event].append(callback)
+ def emit(self,event,**context):
+  for cb in self.extension_hooks.get(event,[]):
+   try:cb(self,**context)
+   except Exception:log.exception('Extension hook failed: %s',event)
+ def battle_terrain(self,state):
+  """Resolve FRLG battle terrain from the player's authoritative current tile.
+
+  Nature Power, Secret Power and Camouflage use the GBA terrain table. The
+  imported map behavior byte is preferred over names; map type and reviewed
+  names are only conservative fallbacks for maps without a diagnostic tile.
+  """
+  m=self.c.maps[state['map']];name=m.get('name','').lower();kind=int(m.get('mapType',0))
+  if m['id'] in safari.MAPS:return 'safari'
+  if kind==5:return 'underwater'
+  x=state.get('x');y=state.get('y');width=int(m.get('width',0));height=int(m.get('height',0));behavior=m.get('behavior',[])
+  tile=None
+  if type(x) is int and type(y) is int and 0<=x<width and 0<=y<height and len(behavior)>=width*height:tile=int(behavior[y*width+x])
+  if tile in (0x02,0xD1):return 'grass'
+  if tile in (0x08,0x2B):return 'cave'
+  if tile==0x0C:return 'mountain'
+  if tile==0x10:return 'pond'
+  if tile in (0x11,0x12,0x13,0x15,0x16,0x17,0x1A,0x1B):return 'water'
+  if tile in (0x19,0x22):return 'underwater'
+  if tile==0x21:return 'sand'
+  if state.get('surf'):return 'water'
+  if kind==4 or any(x in name for x in ('cave','tunnel','cavern','rock tunnel','mt. moon','victory road','ice path','dark cave','union cave','whirl islands','slowpoke well')):return 'cave'
+  if any(x in name for x in ('mountain','mt. silver','mt. ember')):return 'mountain'
+  if any(x in name for x in ('beach','desert','sand')):return 'sand'
+  if kind in (8,9,14) or any(x in name for x in ('center','mart','gym','house','lab','tower','gate','building','department store','game corner','dojo','museum','school','radio tower')):return 'building'
+  return 'plain'
+ def initial(self,name,home,starter,appearance):
+  require(isinstance(home,str) and home in self.c.data['homes'],'Select Kanto or Johto.');require(isinstance(starter,str) and starter in self.c.data['starters'],'Select a valid starter.');require(type(appearance) is int and appearance in (0,7),'Invalid trainer appearance.')
+  key=self.c.data['homes'][home];m=self.c.maps[key];mon=self.c.new_mon(starter,5,name)
+  state={'format':1,'revision':1,'map':key,'x':m['spawn'][0],'y':m['spawn'][1],'direction':'down','home':home,'appearance':appearance,'money':self.s.int('gameplay','starting_money'),'items':{'pokeball':self.s.int('gameplay','starting_pokeballs'),'potion':self.s.int('gameplay','starting_potions')},'creatures':[mon],'party':[mon['uid']],'surf':False}
+  return self.item_system.migrate(self.c.varieties.migrate(self.adventure.migrate(state)))
+ def validate_state(self,state):
+  require(state.get('format')==1,'This character requires a state migration.')
+  mons=state.get('creatures',[]);ids={m['uid'] for m in mons};party=state.get('party',[])
+  require(len(ids)==len(mons) and 1<=len(party)<=6 and len(set(party))==len(party) and all(i in ids for i in party),'Character ownership validation failed; contact the administrator.')
+  require(all(m['species'] in self.c.species for m in mons),'This character needs a newer content pack.')
+  if state['map'] not in self.c.maps or not self.c.maps[state['map']].get('playable',True):state['map']=self.c.data['homes'][state['home']];state['x'],state['y']=self.c.maps[state['map']]['spawn']
+  m=self.c.maps[state['map']]
+  if not (0<=state['x']<m['width'] and 0<=state['y']<m['height']):state['x'],state['y']=m['spawn']
+  migrated=self.adventure.migrate(state)
+  if hasattr(self.c,'growth'):migrated=self.c.growth.migrate(migrated)
+  migrated=self.item_system.migrate(self.c.varieties.migrate(migrated))
+  kanto_gifts.refresh_berry_pouch(self.c,migrated,state)
+  old_map=migrated['map'];surfing.reconcile(self.c,migrated,self.walkable,recover=True)
+  if migrated['map']!=old_map:
+   migrated['warpReturns']=[];migrated.pop('escapeAnchor',None);kanto_obstacles.reset_on_leave(migrated,old_map);kanto_field.mark_map_transition(migrated,old_map,self.c);safari.transition(migrated);self.adventure.visit(migrated,migrated['map'])
+  state.clear();state.update(migrated)
+ async def join(self,uid,name,state,queue,*,auth_hash=None):
+  async with self.lock:
+   require(not self.stopping,'World is shutting down.');require(uid not in self.players,'This account is already online.');require(len(self.players)<self.s.max_players,'This world is full. Please try again later.')
+   # Recheck bans/locks/password changes after the costly authentication hash,
+   # serialized against console mutations before publishing this session.
+   controls=(await asyncio.to_thread(self.db.auth_guard,uid,auth_hash)) if auth_hash is not None else (await asyncio.to_thread(self.db.admin_account,uid=uid) or {})
+   if controls:
+    require(not controls.get('locked'),'This account is locked. Contact the server administrator.')
+    require(not (controls.get('banned_raw') and (not controls.get('ban_until') or controls['ban_until']>int(time.time()))),'This account is banned. Contact the server administrator.')
+   # Login must load after a previous session's final save and removal, under
+   # the same lock. A preloaded snapshot can otherwise resurrect old progress.
+   if state is None:state=await asyncio.to_thread(self.db.load,uid)
+   original=copy.deepcopy(state);state=copy.deepcopy(state);self.validate_state(state)
+   if state!=original:
+    state['revision']=original['revision']+1
+    try:await complete_before_cancelling(asyncio.to_thread(self.db.save_many,[(uid,state)]))
+    except Exception as e:raise RequestError('The database could not save your adventure migration. Your account was not changed; try again after the database is available.') from e
+   p=Player(uid,name,state,queue);p.frozen=bool(controls.get('frozen'));p.trade_blocked=bool(controls.get('trade_blocked'));self.follower_anchor(p);p.saved_revision=state['revision'];p.chat_bucket=Bucket(self.s.int('security','chat_messages_per_10_seconds'),10);self.players[uid]=p
+   p.send('joined',id=uid,username=name,pack=self.c.pack,version=self.c.data['version'],world=self.s.get('world','name'),cap=self.s.max_players,online=len(self.players),stepMs=self.s.step_ms,alphaAtlas=self.s.flag('world','allow_alpha_atlas'),alphaSurf=False,motd=self.s.get('world','motd'))
+   self.send_map(p);self.send_state(p)
+   if p.frozen:p.send('notice',message='Your gameplay is frozen by the local administrator. Chat, saving and logout remain available.')
+   for channel,messages in self.chat.items():p.send('chat_history',channel=channel,messages=list(messages))
+   self.emit('login',player=p);log.info('Joined %s (%d); online=%d',name,uid,len(self.players));return p
+ def send_map(self,p,transition='arrival'):
+  m=self.c.maps[p.state['map']];p.seen.clear();p.send('map',id=m['id'],name=m['name'],region=m['region'],transition=transition,entity=p.entity())
+ def send_state(self,p):
+  s=p.state;p.send('state',ownerId=p.id,money=s['money'],items=s['items'],party=s['party'],creatures=[self.c.public_mon(m) for m in s['creatures']],home=s['home'],revision=s['revision'],adventure=self.adventure.public(s),repelSteps=s.get('repelSteps',0),coins=s.get('coins',0),pokeblocks=copy.deepcopy(s.get('pokeblocks',[])),heldReserve=copy.deepcopy(s.get('heldReserve',{})),itemReceipt=(s.get('itemReceipts') or [{}])[-1].get('id'),itemContext=self.item_context(s),surfContext=self.surf_context(s),surfRequestId=(s.get('surfReceipts') or [{}])[-1].get('id'))
+ def send_move(self,p,**fields):
+  if 'surfContext' not in fields:fields['surfContext']=self.surf_context(p.state)
+  fields.setdefault('surfRequestId',(p.state.get('surfReceipts') or [{}])[-1].get('id'))
+  p.send('move',**fields)
+ def party(self,p):return [next(m for m in p.state['creatures'] if m['uid']==uid) for uid in p.state['party']]
+ def surf_context(self,state):return surfing.context(self.c,state,self.walkable)
+ async def commit(self,p,state):
+  surfing.reconcile(self.c,state,self.walkable)
+  kanto_gifts.refresh_berry_pouch(self.c,state,p.state)
+  self.adventure.observe(state,[m['species'] for m in state['creatures']],caught=True);self.c.varieties.observe(state,state['creatures'],caught=True);self.adventure.refresh_unlocks(state)
+  state['revision']=p.state['revision']+1
+  try:await asyncio.to_thread(self.db.save_many,[(p.id,state)])
+  except Exception as e:log.exception('State commit failed for %s',p.username);raise RequestError('The database could not save this action. Nothing was changed; contact the administrator.') from e
+  p.state=state;p.saved_revision=state['revision'];self.send_state(p)
+ def free(self,p):require(not p.frozen,'Your gameplay is frozen by the local administrator.');require(not p.battle and not p.trade,'Finish your current battle or trade first.')
+ def nearby(self,a,b,radius=8):return a.state['map']==b.state['map'] and max(abs(a.state['x']-b.state['x']),abs(a.state['y']-b.state['y']))<=radius
+ def require_peer(self,p,uid):
+  integer(uid,1,2**53-1,'Trainer ID');q=self.players.get(uid);require(q is not None and not q.closed and q.id!=p.id,'That trainer is not available.');require(self.nearby(p,q),'Move closer to that trainer.');return q
+ def walkable(self,m,x,y,surf=False,from_elevation=None,state=None,from_behavior=None):
+  if not(0<=x<m['width'] and 0<=y<m['height']):return False
+  j=y*m['width']+x;object_blocked=False;collision_override=False
+  # Evaluate environmental objects in one bounded pass. This is a hot path for
+  # human movement and autonomous trainer pathing, so adding story gates must
+  # not multiply whole-object-list scans. Clear state remains owner-only and
+  # never mutates the shared map/collision data.
+  for original in m['objects']:
+   if kanto_obstacles.is_cleared(state,m['id'],original):continue
+   o=kanto_obstacles.object_position(state,m['id'],original)
+   if o['x']!=x or o['y']!=y:continue
+   if surf and (m['behavior'][j] in WATER or from_behavior in WATER) and surfing.object_present(state or {},m['id'],o):object_blocked=True
+   if o['graphics'] in (95,96,97):
+    if tree_cleared(state,m['id'],o):collision_override=True
+    else:object_blocked=True
+   event_id=o.get('storyEvent')
+   if event_id:
+    if story_cleared(state,event_id):collision_override=True
+    else:object_blocked=True
+  dynamic=kanto_field.collision_state(self.c,state,m,x,y) if state else None
+  if dynamic is False:return False
+  if dynamic is True:collision_override=True
+  if surf and m['behavior'][j] in (19,56,57,58,59):return False
+  if (m['collision'][j]!=0 and not collision_override) or (m['behavior'][j] in WATER and not surf):return False
+  elevation=m['elevation'][j]
+  if from_elevation is not None and elevation not in (0,15) and from_elevation not in (0,15) and elevation!=from_elevation and not (surf and {elevation,from_elevation}=={1,3} and ((m['behavior'][j] in WATER)!=(from_behavior in WATER))):return False
+  return not object_blocked
+ def follower_anchor(self,p):
+  m=self.c.maps[p.state['map']];x,y=p.state['x'],p.state['y'];p.fx=x;p.fy=y
+  if p.state.get('surf'):return
+  for dx,dy in ((-1,0),(1,0),(0,1),(0,-1)):
+   if self.walkable(m,x+dx,y+dy,p.state.get('surf',False),state=p.state):p.fx=x+dx;p.fy=y+dy;break
+ def relocation_state(self,p,key,x=None,y=None,*,surf=None):
+  require(key in self.c.maps,'That destination is not in this content pack.');m=self.c.maps[key];require(m.get('playable',True),'This extracted placeholder map has no walkable area in the alpha.')
+  state=copy.deepcopy(p.state)
+  if surf is not None:state['surf']=surf
+  if x is None:x,y=m['spawn']
+  if not self.walkable(m,x,y,state.get('surf',False),state=state):
+   nearby=[(abs(xx-x)+abs(yy-y),xx,yy) for yy in range(max(0,y-4),min(m['height'],y+5)) for xx in range(max(0,x-4),min(m['width'],x+5)) if self.walkable(m,xx,yy,state.get('surf',False),state=state)]
+   if nearby:_,x,y=min(nearby)
+   else:x,y=m['spawn']
+  if self.escape_allowed(m) and not self.escape_allowed(self.c.maps[p.state['map']]) and not state.get('escapeAnchor'):
+   state['escapeAnchor']={'map':p.state['map'],'x':p.state['x'],'y':p.state['y'],'surf':p.state.get('surf',False),'warpReturns':copy.deepcopy(p.state.get('warpReturns',[]))}
+  elif m.get('mapType') in (1,2,3):state.pop('escapeAnchor',None)
+  state.update(map=key,x=x,y=y)
+  if key!=p.state['map']:kanto_obstacles.reset_on_leave(state,p.state['map'])
+  kanto_field.mark_map_transition(state,p.state['map'],self.c);safari.transition(state);surfing.reconcile(self.c,state,self.walkable);self.adventure.visit(state,key);return state
+ def relocate(self,p,key,x=None,y=None,transition='travel'):
+  """Low-level actor relocation; normal gameplay uses relocate_saved."""
+  p.state.update(self.relocation_state(p,key,x,y));p.state['revision']+=1;self.follower_anchor(p);p.last_encounter=time.monotonic();self.send_map(p,transition)
+ async def relocate_saved(self,p,key,x=None,y=None,transition='travel',*,surf=None,clear_returns=False):
+  """Persist the destination before publishing its map to this client."""
+  candidate=self.relocation_state(p,key,x,y,surf=surf)
+  if clear_returns:candidate['warpReturns']=[]
+  await self.commit(p,candidate)
+  self.follower_anchor(p);p.last_encounter=time.monotonic();self.send_map(p,transition)
+ def step_resources(self,state):
+  kanto_field.after_step(state)
+  if state.get('safari') and state['map'] in safari.MAPS:
+   state['safari']['steps']=max(0,state['safari']['steps']-1)
+   if state['safari']['steps']==0:safari.finish(state);return True
+  return False
+ async def start_surf(self,p,data):
+  self.free(p)
+  nonce=data.get('requestId')
+  require(isinstance(nonce,str) and 1<=len(nonce)<=64 and all(c.isalnum() or c in '-_.:' for c in nonce),'Invalid Surf action identifier. Reopen the Surf control.')
+  payload={key:data[key] for key in ('map','x','y','direction') if key in data}
+  digest=hashlib.sha256(json.dumps(payload,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+  receipt=next((r for r in p.state.get('surfReceipts',[]) if r['id']==nonce),None)
+  if receipt:
+   require(receipt['digest']==digest,'That Surf action identifier was used for another request.')
+   self.send_state(p);return
+  require(data.get('map')==p.state['map'],'That Surf control belongs to another map. Try again beside the water.')
+  for key in ('x','y'):
+   if key in data:require(type(data[key]) is int and data[key]==p.state[key],'You moved away from that shoreline. Try Surf again.')
+  if 'direction' in data:require(data['direction']==p.state.get('direction','down'),'You changed direction. Try Surf again.')
+  protected_step=p.state.get('repelSteps',0)>0
+  candidate=surfing.launch(self.c,p.state,self.walkable)
+  if candidate.get('repelSteps',0)>0:candidate['repelSteps']-=1
+  safari_ended=self.step_resources(candidate)
+  candidate.setdefault('surfReceipts',[]).append({'id':nonce,'digest':digest});candidate['surfReceipts']=candidate['surfReceipts'][-32:]
+  await self.commit(p,candidate);self.follower_anchor(p);p.last_move=time.monotonic()
+  if safari_ended:self.send_map(p,'safari_end');p.send('notice',message='Ding-dong! Your Safari Game is over.');return
+  self.send_move(p,seq=p.last_seq,accepted=True,movement='surf_launch',entity=p.entity(),terrain=self.c.maps[p.state['map']]['behavior'][p.state['y']*self.c.maps[p.state['map']]['width']+p.state['x']],pcAvailable=self.adventure.pc_available(p.state),repelSteps=p.state.get('repelSteps',0),itemContext=self.item_context(p.state),surfContext=self.surf_context(p.state),surfRequestId=nonce)
+  p.audio('surf',enabled=True,species=p.state['surfPokemon']['species'])
+  p.send('notice',message='You started Surfing with '+p.state['surfPokemon']['name']+'.')
+  self.emit('move',player=p)
+  if protected_step and not p.state.get('repelSteps'):p.send('notice',message='The Repel wore off.')
+  m=self.c.maps[p.state['map']]
+  if self.adventure.wild_allowed(p.state) and time.monotonic()-p.last_encounter>3 and encounter_slots(m,p.state) and self.c.rng.random()<self.encounter_chance(p.state):await self.start_wild(p,repelled_step=protected_step)
+ async def move(self,p,d):
+  seq=integer(d.get('seq'),0,2**31-1,'Movement sequence');direction=d.get('direction');require(direction in DIRECTIONS,'Invalid movement direction.')
+  if seq<=p.last_seq:self.send_move(p,seq=seq,accepted=False,reason='stale',entity=p.entity());return
+  p.last_seq=seq;now=time.monotonic()
+  if p.frozen:self.send_move(p,seq=seq,accepted=False,reason='frozen',entity=p.entity());return
+  if p.battle or p.trade or not p.move_bucket.take() or now-p.last_move<(self.movement_step_ms(p.state)-5)/1000:self.send_move(p,seq=seq,accepted=False,reason='busy' if p.battle or p.trade else 'rate',entity=p.entity());return
+  if surfing.on_water(self.c,p.state)!=bool(p.state.get('surf')) or (p.state.get('surf') and (not surfing.badge_allowed(p.state) or surfing.partner(self.c,p.state) is None)):
+   candidate=copy.deepcopy(p.state);self.validate_state(candidate);await self.commit(p,candidate);self.follower_anchor(p)
+   self.send_map(p,'surf_recovery');p.send('notice',message='Your character returned safely to dry land. Surf requires this region’s badge and a Water-type party Pokémon.')
+   self.send_move(p,seq=seq,accepted=False,reason='surf_state_repaired',entity=p.entity(),surfContext=self.surf_context(p.state));return
+  p.last_move=now;s=p.state;m=self.c.maps[s['map']];dx,dy,conndir=DIRECTIONS[direction];previous={k:s[k] for k in ('map','x','y','revision')};previous['direction']=s.get('direction','down');previous_follower=(p.fx,p.fy);s['direction']=direction;s['revision']+=1;x,y=s['x']+dx,s['y']+dy;oldx,oldy=s['x'],s['y'];changed=False;accepted=False;movement='step';had_repel=s.get('repelSteps',0)>0
+  async def cross_map(key,tx,ty,transition):
+   try:
+    candidate=self.relocation_state(p,key,tx,ty)
+    if had_repel:candidate['repelSteps']-=1
+    safari_ended=self.step_resources(candidate)
+    await self.commit(p,candidate)
+    if safari_ended:p.send('notice',message='Ding-dong! Your Safari Game is over.')
+    self.follower_anchor(p);p.last_encounter=time.monotonic();self.send_map(p,transition)
+   except RequestError:
+    p.state.update(previous);p.fx,p.fy=previous_follower;self.send_move(p,seq=seq,accepted=False,reason='save_failed',entity=p.entity());raise
+  if not(0<=x<m['width'] and 0<=y<m['height']):
+   for conn in m['connections']:
+    if conn['direction']!=conndir or conn['target'] not in self.c.maps:continue
+    target=self.c.maps[conn['target']]
+    if conndir==1:tx,ty=x-conn['offset'],0
+    elif conndir==2:tx,ty=x-conn['offset'],target['height']-1
+    elif conndir==3:tx,ty=target['width']-1,y-conn['offset']
+    else:tx,ty=0,y-conn['offset']
+    if self.walkable(target,tx,ty,s.get('surf',False),state=s):
+     await cross_map(target['id'],tx,ty,'connection');changed=True;accepted=True;movement='connection';break
+  else:
+   behavior=m['behavior'][y*m['width']+x];ledges={'right':56,'left':57,'up':58,'down':59}
+   if behavior==ledges[direction] and not s.get('surf'):x+=dx;y+=dy;movement='jump'
+   portal=plan_warp(self.c,s,m,x,y,direction)
+   if portal and 'blocked' in portal:p.send('notice',message=portal['blocked'])
+   elif portal and portal['map'] in safari.MAPS and not safari.active(s):
+    p.send('notice',message='Speak to the Safari Zone receptionist to enter the Safari Game.')
+   elif portal and kanto_field.portal_block(s,m['id'],portal['map']):
+    p.send('notice',message=kanto_field.portal_block(s,m['id'],portal['map']))
+   elif portal:
+    candidate=self.relocation_state(p,portal['map'],portal['x'],portal['y']);candidate['warpReturns']=portal['warpReturns']
+    if had_repel:candidate['repelSteps']-=1
+    safari_ended=self.step_resources(candidate)
+    try:await self.commit(p,candidate)
+    except RequestError:
+     p.state.update(previous);p.fx,p.fy=previous_follower;self.send_move(p,seq=seq,accepted=False,reason='save_failed',entity=p.entity());raise
+    self.follower_anchor(p);p.last_encounter=time.monotonic();self.send_map(p,'warp');changed=True;accepted=True;movement='warp'
+   else:
+    source_elev=m['elevation'][oldy*m['width']+oldx]
+    if self.walkable(m,x,y,s.get('surf',False),None if behavior in (56,57,58,59) and not s.get('surf') else source_elev,state=s,from_behavior=m['behavior'][oldy*m['width']+oldx]):
+     if s.get('surf') and m['behavior'][y*m['width']+x] not in WATER:
+      candidate=copy.deepcopy(s);candidate.update(x=x,y=y);surfing.clear(candidate)
+      if had_repel:candidate['repelSteps']-=1
+      safari_ended=self.step_resources(candidate)
+      # Keep the live and durable pre-step state intact if this commit fails.
+      s.update(previous)
+      try:await self.commit(p,candidate)
+      except RequestError:
+       p.fx,p.fy=previous_follower;self.send_move(p,seq=seq,accepted=False,reason='save_failed',entity=p.entity(),surfContext=self.surf_context(p.state));raise
+      self.follower_anchor(p);accepted=True;changed=True;movement='dismount';p.audio('surf',enabled=False)
+      if safari_ended:self.follower_anchor(p);self.send_map(p,'safari_end');p.send('notice',message='Ding-dong! Your Safari Game is over.')
+     else:s['x']=x;s['y']=y;p.fx=oldx;p.fy=oldy;accepted=True
+  s=p.state;current=self.c.maps[s['map']];terrain=current['behavior'][s['y']*current['width']+s['x']]
+  if accepted and not changed:
+   if s.get('safari',{}).get('steps')==1 and s['map'] in safari.MAPS:
+    candidate=copy.deepcopy(s);self.step_resources(candidate)
+    await self.commit(p,candidate);s=p.state;current=self.c.maps[s['map']];changed=True
+    self.follower_anchor(p);self.send_map(p,'safari_end');p.send('notice',message='Ding-dong! Your Safari Game is over. You returned to reception.')
+   else:self.step_resources(s)
+  protected_step=accepted and had_repel
+  if protected_step:
+   if not changed:s['repelSteps']-=1
+   if not s['repelSteps']:p.send('notice',message='The Repel wore off.')
+  self.send_move(p,seq=seq,accepted=accepted,reason=None if accepted else 'blocked',movement=movement if accepted else None,terrain=terrain,pcAvailable=self.adventure.pc_available(p.state),entity=p.entity(),repelSteps=s.get('repelSteps',0),itemContext=self.item_context(s),surfContext=self.surf_context(s),surfRequestId=(s.get('surfReceipts') or [{}])[-1].get('id'))
+  if accepted and (not changed or movement=='dismount'):
+   self.emit('move',player=p)
+   m=self.c.maps[s['map']];j=s['y']*m['width']+s['x'];beh=m['behavior'][j]
+   if self.adventure.wild_allowed(s) and now-p.last_encounter>3 and encounter_slots(m,s) and self.c.rng.random()<self.encounter_chance(s):await self.start_wild(p,repelled_step=protected_step)
+ def encounter_chance(self,state):
+  chance=self.s.encounter_chance
+  rate=state.get('kantoField',{}).get('encounterRate',[1,1]) if state['map'].startswith('kanto_') else [1,1]
+  chance*=rate[0]/rate[1]
+  lead=next((m for m in state['creatures'] if m['uid']==state['party'][0]),None)
+  if lead:
+   n,d=self.item_system.held(lead).get('encounterRate',[1,1]);chance*=n/d
+  return min(1,max(0,chance))
+ async def start_wild(self,p,forced=None,*,repelled_step=False):
+  self.free(p);require(any(m['hp']>0 for m in self.party(p)),'Your party needs healing.');m=self.c.maps[p.state['map']];j=p.state['y']*m['width']+p.state['x'];beh=m['behavior'][j]
+  if m['id'] in safari.MAPS:require(safari.active(p.state),'Visit the Safari Zone receptionist to start a Safari Game.')
+  if forced is None:
+   require(self.adventure.wild_allowed(p.state),'Wild encounters are unavailable inside Pokemon Centers and Gyms.')
+   slots=encounter_slots(m,p.state)
+   require(bool(slots),'No wild encounters here. Try the grass, a cave floor, or an eligible Surf area on this map.')
+   key,level=select_encounter(slots,self.c.rng)
+  else:key,level=forced # Internal test/extension hook only; never accepted from a client packet.
+  if forced is None and (p.state.get('repelSteps',0)>0 or repelled_step) and level<self.party(p)[0]['level']:
+   p.last_encounter=time.monotonic();return False
+  enemy=self.c.new_mon(key,level,variety=self.c.varieties.roll(key));state=copy.deepcopy(p.state);self.adventure.observe(state,[key]);self.c.varieties.observe(state,[enemy]);await self.commit(p,state);b=Battle(self.c,'wild',[p.id,None],[p.username,'Wild '+self.c.varieties.display_name(enemy)],[self.party(p),[enemy]],[p.state['items'],{}],self.s.int('gameplay','battle_turn_seconds'),audio_source=m['id'].split('_',1)[0],terrain=self.battle_terrain(p.state),caught_species=[p.state.get('adventure',{}).get('caught',[]),[]]);self.battles[b.id]=b;p.battle=b.id;p.last_encounter=time.monotonic();p.send('battle',battle=b.view(0));return True
+ async def battle_action(self,p,d):
+  require(p.battle in self.battles,'You are not in a battle.');b=self.battles[p.battle];require(d.get('id')==b.id,'That battle has ended.');side=b.players.index(p.id)
+  if d.get('action')=='capture':require(len(p.state['creatures'])<self.s.max_owned,'Your collection is full. Make room before capturing.')
+  b.choose(side,d)
+  if len(b.choice)==2:await self.resolve_battle(b)
+  else:p.send('battle',battle=b.view(side))
+ async def resolve_battle(self,b):
+  b.resolve();records=[];newstates={};audio_committed=True
+  if b.kind!='duel':
+   p=self.players.get(b.players[0])
+   if p:
+    state=copy.deepcopy(p.state);byid={m['uid']:m for m in b.rosters[0]};state['creatures']=[copy.deepcopy(byid.get(m['uid'],m)) for m in state['creatures']];state['items']=copy.deepcopy(b.items[0])
+    trainer=getattr(b,'adventure_trainer',None);rematch=bool(trainer and trainer['id'] in state['adventure']['trainers'] and not getattr(b,'kanto_rematch',False))
+    if b.caught:
+     require(len(state['creatures'])<self.s.max_owned,'Your collection is full.');state['creatures'].append(copy.deepcopy(b.caught))
+     if len(state['party'])<6:state['party'].append(b.caught['uid'])
+    if not rematch:
+     for event in getattr(b,'experience_events',[]):
+      roster=[m for m in state['creatures'] if m['uid'] in state['party']]
+      total=max(1,self.c.species[event['species']]['baseExperience']*event['level']*(3 if b.kind=='trainer' else 2)//14)
+      for mon,exp in self.item_system.experience_recipients(roster,event['participants'],total):
+       awarded,gained=self.item_system.award_experience(mon,event['species'],exp);b.logs.append(f'{self.c.species[mon["species"]]["name"]} gained {awarded} EXP.'+(f' Level {mon["level"]}!' if gained else ''));b.audio('experience',0,species=mon['species'],amount=awarded)
+       if gained:b.audio('level_up',0,species=mon['species'],level=mon['level'],gained=gained)
+    if b.ended and b.winner==0 and not b.rewarded:
+     story_event=getattr(b,'story_event',None)
+     if story_event:
+      if not story_cleared(state,story_event):mark_story_cleared(state,story_event)
+      b.logs.append('The Pokémon no longer blocks this path. It is permanently clear for your character.')
+     elif trainer:
+      previous_unlocks=set(state['adventure']['unlocks']);before_items=copy.deepcopy(state['items']);before_money=state['money'];first=self.adventure.victory(state,trainer)
+      if first:state['money']=min(2_000_000_000,before_money+(state['money']-before_money)*getattr(b,'prize_multipliers',[1,1])[0])
+      for unlocked in set(state['adventure']['unlocks'])-previous_unlocks:
+       if unlocked in ('cut_kanto','cut_johto'):b.logs.append('Cut unlocked for '+unlocked[4:].title()+'! Click a small HM tree to clear your own path.')
+      for item,count in state['items'].items():
+       if count>before_items.get(item,0) and self.c.items.get(item,{}).get('keyItem'):b.logs.append('Received '+self.c.items[item]['name']+'! It was placed in your Key Items and saved to this character.')
+      if not first and getattr(b,'kanto_rematch',False):state['money']=min(2_000_000_000,state['money']+self.adventure.trainer_reward(trainer)*getattr(b,'prize_multipliers',[1,1])[0])
+      b.logs.append('First victory recorded. Your reward and badge progress were saved.' if first else 'Vs. Seeker rematch won. EXP and prize money were saved.' if getattr(b,'kanto_rematch',False) else 'Rematch complete. First-victory rewards and EXP are not awarded again.')
+     elif not b.caught:state['money']=min(2_000_000_000,state['money']+(120 if b.kind=='trainer' else 25))
+     if b.payday:
+      coins=max(0,int(b.payday))*getattr(b,'prize_multipliers',[1,1])[0];state['money']=min(2_000_000_000,state['money']+coins);b.logs.append(f'Picked up {coins} in Pay Day coins.')
+     b.rewarded=True
+    self.adventure.observe(state,[m['species'] for m in state['creatures']],caught=True);self.c.varieties.observe(state,state['creatures'],caught=True)
+    if b.ended and b.winner==1:
+     for mon in state['creatures']:
+      if mon['uid'] in state['party']:self.c.heal(mon)
+     key=state['adventure'].get('lastCenter');returns=return_stack(self.c,{'warpReturns':state['adventure'].get('lastCenterReturns',[])})
+     if key not in self.c.data.get('centers',{}):key=None
+     if key and any(w.get('access',{}).get('dynamic') for w in self.c.maps[key]['warps']) and not any(e['inside']==key for e in returns):key=None
+     if key is None:key=self.c.data['homes'][state['home']];returns=[];point=self.c.maps[key]['spawn']
+     else:point=state['adventure'].get('lastCenterPosition') or self.c.data['centers'][key]['respawn']
+     if not isinstance(point,(list,tuple)) or len(point)!=2 or not all(type(v) is int for v in point) or not self.walkable(self.c.maps[key],*point,state=state):point=self.c.data.get('centers',{}).get(key,{}).get('respawn',self.c.maps[key]['spawn'])
+     state.update(map=key,x=point[0],y=point[1],surf=False,warpReturns=returns);self.adventure.visit(state,key);b.logs.append('Your party was restored at your last Pokemon Center, or your home hub if you have not visited one.')
+    if b.ended and getattr(b,'safari',False) and state.get('items',{}).get(safari.BALL,0)<=0:
+     safari.finish(state);self.adventure.visit(state,state['map']);b.logs.append('Your Safari Balls are all gone. You returned to reception.')
+    kanto_gifts.refresh_berry_pouch(self.c,state,p.state)
+    surfing.reconcile(self.c,state,self.walkable)
+    state['revision']=p.state['revision']+1;records.append((p.id,state));newstates[p.id]=state
+   try:await asyncio.to_thread(self.db.save_many,records)
+   except Exception:
+    log.exception('Battle transaction failed; aborting without applying this turn')
+    b.ended=True;b.winner=None;b.caught=None;b.logs=['Database save failed. This turn was not applied. The battle has been safely closed.'];newstates={};audio_committed=False;b.reset_audio();b.audio('abort',reason='save_failed')
+  if b.ended and audio_committed:
+   if getattr(b,'ai_trainer_id',None):await self.autonomous.finish_human_battle(b)
+   # Combat owns the single battle_end event. Rewards are appended by World
+   # only after a durable commit, so keep that existing result cue last without
+   # manufacturing a duplicate or changing its stable event id.
+   endings=[e for e in b.audio_events if e.get('cue')=='battle_end']
+   if endings:b.audio_events[:]=[e for e in b.audio_events if e.get('cue')!='battle_end']+endings
+  for side,pid in enumerate(b.players):
+   p=self.players.get(pid)
+   if not p:continue
+   if pid in newstates:
+    oldmap=p.state['map'];p.state=newstates[pid];p.saved_revision=p.state['revision'];b.rosters[side]=copy.deepcopy(self.party(p));self.send_state(p)
+    if p.state['map']!=oldmap:p.fx=p.state['x'];p.fy=p.state['y'];self.send_map(p,transition='rescue')
+   p.send('battle',battle=b.view(side))
+   if b.ended:p.battle=None;p.last_encounter=time.monotonic()
+  if b.ended:self.battles.pop(b.id,None);self.emit('battle_end',battle=b)
+ async def invite(self,p,d):
+  self.free(p);kind=d.get('kind');require(kind in ('trade','challenge'),'Unknown invitation.');q=self.require_peer(p,d.get('target'));self.free(q)
+  require(kind!='trade' or not (p.trade_blocked or q.trade_blocked),'Trading is restricted for one of these accounts.')
+  require(not any(p.id in (v['from'],v['to']) or q.id in (v['from'],v['to']) for v in self.invites.values()),'One trainer already has a pending invitation.')
+  key=str(uuid.uuid4());inv={'id':key,'kind':kind,'from':p.id,'to':q.id,'expires':time.monotonic()+self.s.int('gameplay','invite_timeout_seconds')};self.invites[key]=inv
+  q.send('invite',id=key,kind=kind,trainer=p.username,fromId=p.id,seconds=self.s.int('gameplay','invite_timeout_seconds'));p.send('notice',message=f'{kind.title()} invitation sent to {q.username}.')
+ async def answer_invite(self,p,d):
+  key=d.get('id');inv=self.invites.get(key);require(inv is not None and inv['to']==p.id,'That invitation is no longer available.');self.invites.pop(key,None);q=self.players.get(inv['from']);require(q is not None,'The other trainer disconnected.')
+  if d.get('accept') is not True:q.send('notice',message=f'{p.username} declined your invitation.');return
+  require(inv['expires']>time.monotonic(),'That invitation expired.');self.free(p);self.free(q);require(self.nearby(p,q),'The trainers moved too far apart.')
+  require(inv['kind']!='trade' or not (p.trade_blocked or q.trade_blocked),'Trading is restricted for one of these accounts.')
+  if inv['kind']=='challenge':
+   require(all(any(m['hp']>0 for m in self.party(t)) for t in (q,p)),'Both trainers need at least one healthy Pokemon.')
+   b=Battle(self.c,'duel',[q.id,p.id],[q.username,p.username],[self.party(q),self.party(p)],[{},{}],self.s.int('gameplay','battle_turn_seconds'),audio_source=p.state['map'].split('_',1)[0],terrain=self.battle_terrain(p.state));self.battles[b.id]=b;q.battle=b.id;p.battle=b.id;q.send('battle',battle=b.view(0));p.send('battle',battle=b.view(1))
+  else:
+   tid=str(uuid.uuid4());t={'id':tid,'players':[q.id,p.id],'offers':{q.id:{'pokemon':[],'items':{},'money':0},p.id:{'pokemon':[],'items':{},'money':0}},'ready':set(),'confirmed':set(),'revision':0,'deadline':time.monotonic()+self.s.int('gameplay','trade_timeout_seconds')};self.trades[tid]=t;q.trade=tid;p.trade=tid;self.send_trade(t)
+ def trade_digest(self,t):return hashlib.sha256(json.dumps(t['offers'],sort_keys=True,separators=(',',':')).encode()).hexdigest()
+ def send_trade(self,t):
+  digest=self.trade_digest(t)
+  for pid in t['players']:
+   p=self.players.get(pid)
+   if not p:continue
+   other=next(i for i in t['players'] if i!=pid);q=self.players.get(other)
+   offers={}
+   for owner in t['players']:
+    player=self.players.get(owner)
+    if player:
+     o=copy.deepcopy(t['offers'][owner]);o['pokemon']=[self.c.public_mon(m,False) for m in player.state['creatures'] if m['uid'] in o['pokemon']];offers[str(owner)]=o
+   p.send('trade',trade={'id':t['id'],'revision':t['revision'],'digest':digest,'you':pid,'other':other,'otherName':q.username if q else 'Disconnected','offers':offers,'ready':list(t['ready']),'confirmed':list(t['confirmed']),'seconds':max(0,int(t['deadline']-time.monotonic()))})
+ def check_offer(self,p,offer):
+  require(isinstance(offer,dict),'Invalid offer.');ids=offer.get('pokemon',[]);items=offer.get('items',{});money=integer(offer.get('money',0),0,2_000_000_000,'Money')
+  require(isinstance(ids,list) and len(ids)<=6 and all(isinstance(i,str) for i in ids) and len(ids)==len(set(ids)),'Offer up to six distinct Pokemon.')
+  owned={m['uid'] for m in p.state['creatures']};require(all(i in owned for i in ids),'You no longer own an offered Pokemon.');require(money<=p.state['money'],'You do not have that much money.');require(isinstance(items,dict) and len(items)<=len(self.c.items),'Invalid item offer.')
+  clean={}
+  for k,n in items.items():
+   require(k in self.c.items,'Unknown trade item.');require(self.c.items[k].get('tradable',True),'Key Items cannot be traded.');integer(n,0,999,'Item quantity');require(n<=p.state['items'].get(k,0),'You do not own that many items.')
+   if n:clean[k]=n
+  return {'pokemon':ids,'items':clean,'money':money}
+ async def trade_action(self,p,d):
+  require(p.trade in self.trades,'You are not in a trade.');t=self.trades[p.trade];require(d.get('id')==t['id'],'That trade has ended.');action=d.get('action')
+  if action=='cancel':self.cancel_trade(t,'The exchange was cancelled. Nothing was transferred.');return
+  require(all(not self.players[uid].trade_blocked and not self.players[uid].frozen for uid in t['players']),'Trading is restricted for one of these accounts.')
+  require(d.get('revision')==t['revision'],'This offer changed. Review the current exchange before proceeding.')
+  if action=='offer':
+   t['offers'][p.id]=self.check_offer(p,d.get('offer'));t['revision']+=1;t['ready'].clear();t['confirmed'].clear()
+  elif action=='lock':
+   self.check_offer(p,t['offers'][p.id]);t['ready'].add(p.id)
+  elif action=='confirm':
+   require(len(t['ready'])==2 and d.get('digest')==self.trade_digest(t),'Both trainers must lock and review the same offer.');t['confirmed'].add(p.id)
+   if len(t['confirmed'])==2:
+    try:await self.commit_trade(t)
+    except RequestError:
+     t['confirmed'].clear();self.send_trade(t);raise
+    return
+  else:raise RequestError('Unknown trade action.')
+  t['deadline']=time.monotonic()+self.s.int('gameplay','trade_timeout_seconds');self.send_trade(t)
+ async def commit_trade(self,t):
+  a,b=[self.players.get(pid) for pid in t['players']];require(a is not None and b is not None,'One trainer disconnected.');require(self.nearby(a,b),'The other trainer is too far away.')
+  oa,ob=[self.check_offer(p,t['offers'][p.id]) for p in (a,b)];sa,sb=copy.deepcopy(a.state),copy.deepcopy(b.state)
+  # Take both source snapshots BEFORE applying either side, so no object can duplicate.
+  outgoing_a=[m for m in sa['creatures'] if m['uid'] in oa['pokemon']];outgoing_b=[m for m in sb['creatures'] if m['uid'] in ob['pokemon']]
+  mail_a={k:copy.deepcopy(sa.get('mailMessages',{}).get(k,[])[:n]) for k,n in oa['items'].items()}
+  mail_b={k:copy.deepcopy(sb.get('mailMessages',{}).get(k,[])[:n]) for k,n in ob['items'].items()}
+  if hasattr(self.c,'growth'):
+   for mon in outgoing_a+outgoing_b:self.c.growth.mark_trade(mon)
+  for p,state,off,gain,incoming in [(a,sa,oa,ob,outgoing_b),(b,sb,ob,oa,outgoing_a)]:
+   original_party=list(state['party']);state['creatures']=[m for m in state['creatures'] if m['uid'] not in off['pokemon']]+copy.deepcopy(incoming);state['party']=[i for i in original_party if i not in off['pokemon']]
+   require(1<=len(state['creatures'])<=self.s.max_owned,'An exchange cannot leave a trainer with no Pokemon or exceed collection capacity.')
+   vacancies=len(original_party)-len(state['party'])
+   for mon in incoming[:vacancies]:state['party'].append(mon['uid'])
+   require(bool(state['party']) and any(m['hp']>0 for m in state['creatures'] if m['uid'] in state['party']),'An exchange must leave each trainer with a healthy party Pokemon.')
+   state['money']+=gain['money']-off['money'];require(state['money']<=2_000_000_000,'The recipient money balance would exceed the limit.')
+   for item,n in off['items'].items():
+    state['items'][item]=state['items'].get(item,0)-n
+    if item in state.get('mailMessages',{}):state['mailMessages'][item]=state['mailMessages'][item][n:]
+   for item,notes in (mail_b if p is a else mail_a).items():
+    if notes:state.setdefault('mailMessages',{}).setdefault(item,[]).extend(copy.deepcopy(notes))
+   for item,n in gain['items'].items():state['items'][item]=state['items'].get(item,0)+n;require(state['items'][item]<=999,'An item stack would exceed 999.')
+   kanto_gifts.refresh_berry_pouch(self.c,state,p.state)
+   self.adventure.observe(state,[m['species'] for m in state['creatures']],caught=True);self.c.varieties.observe(state,state['creatures'],caught=True);state['revision']=p.state['revision']+1
+  for state in (sa,sb):surfing.reconcile(self.c,state,self.walkable)
+  allids=[m['uid'] for s in (sa,sb) for m in s['creatures']];require(len(allids)==len(set(allids)),'Duplicate ownership detected; exchange blocked.')
+  try:await asyncio.to_thread(self.db.trade,t['id'],a.id,sa,b.id,sb,{'offers':t['offers'],'digest':self.trade_digest(t)})
+  except Exception as e:log.exception('Trade rolled back %s',t['id']);self.cancel_trade(t,'The database rejected the exchange. Neither side was changed.');return
+  a.state=sa;b.state=sb;a.saved_revision=sa['revision'];b.saved_revision=sb['revision']
+  for p in (a,b):p.trade=None;self.send_state(p);p.send('trade_done',id=t['id'],success=True,message='Exchange completed and saved for both trainers.');p.audio('trade_complete',trade=t['id'])
+  self.trades.pop(t['id'],None);self.emit('trade_complete',trade=t);log.info('Committed trade %s between %d and %d',t['id'],a.id,b.id)
+ def cancel_trade(self,t,message):
+  for pid in t['players']:
+   p=self.players.get(pid)
+   if p:p.trade=None;p.send('trade_done',id=t['id'],success=False,message=message)
+  self.trades.pop(t['id'],None)
+ async def cut_tree(self,p,d,o):
+  """Called only after npc identity/proximity/free-session checks under world lock."""
+  m=self.c.maps[p.state['map']];key=m['id'];rule=CUT_REQUIREMENTS.get(region(key));action=d.get('action')
+  require(rule is not None,'Cut is not supported in this region.')
+  allowed=cut_allowed(p.state);cleared=tree_cleared(p.state,key,o)
+  if action=='cut':
+   require(d.get('map')==key,'That tree menu belongs to another map. Click the tree again.')
+   require(allowed,'Cut is locked here. Defeat '+rule['leader']+' for the '+rule['badgeName']+'.')
+   if not cleared:
+    state=copy.deepcopy(p.state);cuts=state['adventure'].setdefault('cutTrees',{}).setdefault(key,[]);cuts.append(o['id']);cuts.sort()
+    await self.commit(p,state)
+   p.send('dialog',title='Path cleared',message='You used Cut. This tree is cleared and saved for your character only; other trainers must cut their own tree.',actions=[],npc=o['id'],map=key)
+   return
+  require(action in (None,'talk'),'This tree only supports Cut.')
+  message=('This tree is already cleared for your character.' if cleared else
+   'This small tree can be cut. Use Cut to clear this path for your character.' if allowed else
+   'Cut is locked in '+region(key).title()+'. Defeat '+rule['leader']+' in '+rule['city']+' and earn the '+rule['badgeName']+' to unlock it automatically.')
+  p.send('dialog',title='Small HM tree',message=message,actions=['cut'],disabledActions=[] if allowed and not cleared else ['cut'],npc=o['id'],map=key,fieldMove={'move':'Cut','unlocked':allowed,'cleared':cleared,**rule})
+ async def story_object(self,p,d,o):
+  """Resolve an owner-only authored map story object after identity/proximity checks."""
+  m=self.c.maps[p.state['map']];event=story_for_object(self.c,m['id'],o);require(event is not None,'That story event is unavailable.');action=d.get('action');done=story_cleared(p.state,event['id']);badge=event.get('requiredBadge');item=event.get('requiredItem');badge_earned=not badge or badge in p.state['adventure']['badges'];item_owned=not item or p.state['items'].get(item,0)>0
+  if action in ('squirtbottle','pokeflute'):
+   require(d.get('map')==m['id'],'That story menu belongs to another map. Click the odd tree again.');require(action==('pokeflute' if event.get('requiredItem')=='fr_pokeflute' else 'squirtbottle'),'Choose the correct item for this obstacle.');require(not done,'This route is already clear for your character.');require(badge_earned,('Defeat '+event.get('leader','the Gym Leader')+' and earn the '+event.get('requiredBadgeName','required badge')+' first.'));require(item_owned,'You need the '+event['itemName']+' before this tree will react.');require(any(mon['hp']>0 for mon in self.party(p)),'Your party needs healing.')
+   enemy=self.c.new_mon(event['species'],event['level'],variety=event.get('variety','normal'))
+   if event.get('moves'):enemy['moves']=[{'id':mid,'pp':self.c.moves[str(mid)]['pp']} for mid in event['moves']]
+   state=copy.deepcopy(p.state);self.adventure.observe(state,[enemy['species']]);self.c.varieties.observe(state,[enemy]);await self.commit(p,state)
+   b=Battle(self.c,'wild',[p.id,None],[p.username,'Wild '+self.c.varieties.display_name(enemy)],[self.party(p),[enemy]],[p.state['items'],{}],self.s.int('gameplay','battle_turn_seconds'),audio_source=m['id'].split('_',1)[0],terrain=self.battle_terrain(p.state),caught_species=[p.state.get('adventure',{}).get('caught',[]),[]]);b.story_event=event['id'];b.story_map=m['id'];b.story_npc=o['id'];self.battles[b.id]=b;p.battle=b.id;p.last_encounter=time.monotonic();p.send('battle',battle=b.view(0));return
+  require(action in (None,'talk'),'This object only supports its story interaction.')
+  if event.get('requiredItem')=='fr_pokeflute':
+   p.send('dialog',title='Sleeping Snorlax',message=('This path is already clear.' if done else 'A Snorlax is sleeping here. Play the Poké Flute to wake it.'),actions=['pokeflute'],disabledActions=[] if item_owned and not done else ['pokeflute'],npc=o['id'],map=m['id']);return
+  if done:message='The strange tree is gone. Route 36 is permanently clear for your character.'
+  elif not badge_earned:message='This odd tree will not budge. Defeat '+event['leader']+' in '+event['city']+' and earn the '+event['requiredBadgeName']+' before dealing with it.'
+  elif not item_owned:message='The odd tree looks like it dislikes water. You need the '+event['itemName']+' to make it react.'
+  else:message='The odd tree squirms when you get close. Use the '+event['itemName']+'?'
+  p.send('dialog',title='Odd tree',message=message,actions=['squirtbottle'],disabledActions=[] if not done and badge_earned and item_owned else ['squirtbottle'],npc=o['id'],map=m['id'],storyEvent={'id':event['id'],'cleared':done,'ready':not done and badge_earned and item_owned,'badgeEarned':badge_earned,'itemOwned':item_owned,'requiredBadgeName':event.get('requiredBadgeName'),'leader':event.get('leader'),'city':event.get('city'),'itemName':event.get('itemName')})
+ async def award_pickup(self,p,pickup):
+  candidate=self.adventure.collect_item(p.state,pickup)
+  await self.commit(p,candidate)
+  quantity=pickup['quantity'];item=self.c.items.get(pickup.get('item'),{})
+  message=('You found '+str(quantity)+' coins!' if pickup.get('rewardType')=='coins' else 'You found '+item['name']+('!' if quantity==1 else ' × '+str(quantity)+'!'))
+  p.send('dialog',title='Item found',message=message,actions=[],npc=pickup.get('npc'),map=p.state['map'])
+  p.audio('item',item=pickup.get('item'),quantity=quantity)
+ async def interact(self,p,d):
+  self.free(p);require(d.get('map',p.state['map'])==p.state['map'],'That interaction belongs to another map.')
+  interaction=kanto_field.interact(self.c,p.state)
+  if interaction:
+   candidate,message,_=interaction;await self.commit(p,candidate);p.send('notice',message=message);p.audio('item');return
+  pickup=self.adventure.hidden_at(p.state)
+  if pickup:
+   await self.award_pickup(p,pickup);return
+  m=self.c.maps[p.state['map']]
+  removed=set(self.adventure.removed_objects(p.state).get(m['id'],[]))
+  objects=[kanto_obstacles.object_position(p.state,m['id'],o) for o in m.get('objects',[]) if not kanto_obstacles.is_cleared(p.state,m['id'],o)]
+  nearby=[o for o in objects if o['id'] not in removed and max(abs(o['x']-p.state['x']),abs(o['y']-p.state['y']))<=2
+          and not (o.get('itemPickup') in self.adventure.item_pickups and self.adventure.item_collected(p.state,self.adventure.item_pickups[o['itemPickup']]))
+          and not (o.get('storyEvent') and story_cleared(p.state,o['storyEvent']))
+          and not tree_cleared(p.state,m['id'],o)]
+  if nearby:
+   obj=min(nearby,key=lambda o:abs(o['x']-p.state['x'])+abs(o['y']-p.state['y']))
+   await self.npc(p,{'npc':obj['id'],'map':m['id']});return
+  p.send('notice',message='There is nothing here. Face an object or a nearby hidden-item tile and press E.')
+ async def npc(self,p,d):
+  self.free(p);m=self.c.maps[p.state['map']];nid=integer(d.get('npc'),0,255,'NPC ID');o=next((o for o in m['objects'] if o['id']==nid),None);require(o is not None,'That NPC is not available.');o=kanto_obstacles.object_position(p.state,m['id'],o);action=d.get('action')
+  require(max(abs(p.state['x']-o['x']),abs(p.state['y']-o['y']))<=2,'Move closer to speak to this character.')
+  require(d.get('map',m['id'])==m['id'],'That interaction belongs to another map. Click the object again.')
+  if m['id'].startswith('kanto_') and o.get('graphics') in (96,97):
+   require(not kanto_obstacles.is_cleared(p.state,m['id'],o),'This rock is already cleared.')
+   command='push_boulder' if o['graphics']==97 else 'smash_rock'
+   if action==command:
+    candidate=kanto_obstacles.act(self.c,p.state,o,'push' if command=='push_boulder' else 'smash',self.walkable)
+    if command=='push_boulder':
+     self.step_resources(candidate)
+     if candidate.get('repelSteps',0)>0:candidate['repelSteps']-=1
+    await self.commit(p,candidate);self.follower_anchor(p)
+    self.send_move(p,seq=p.last_seq,accepted=True,movement='push' if command=='push_boulder' else 'step',entity=p.entity(),pcAvailable=self.adventure.pc_available(p.state),repelSteps=p.state.get('repelSteps',0),itemContext=self.item_context(p.state))
+    p.send('notice',message='The boulder moved.' if command=='push_boulder' else 'The rock was smashed.');p.audio('item');return
+   require(action in (None,'talk'),'Choose this obstacle’s field action.')
+   badge='kanto_4' if o['graphics']==97 else 'kanto_6';ready=badge in p.state.get('adventure',{}).get('badges',[])
+   p.send('dialog',title='Boulder' if o['graphics']==97 else 'Breakable rock',message=('Stand directly beside the boulder to push it one tile.' if o['graphics']==97 else 'Use your field license to smash this rock.') if ready else ('Earn the Rainbow Badge to push boulders.' if o['graphics']==97 else 'Earn the Marsh Badge to smash rocks.'),actions=[command],disabledActions=[] if ready else [command],npc=nid,map=m['id']);return
+  if m['id']==safari.GATE and nid==1:
+   if action=='safari_enter':
+    candidate=safari.admit(p.state);self.adventure.visit(candidate,candidate['map']);await self.commit(p,candidate);self.follower_anchor(p);self.send_map(p,'safari_entry');p.send('notice',message='Welcome to the Safari Game! You have 30 Safari Balls and 600 steps.');return
+   require(action in (None,'talk'),'Choose the Safari Game admission.')
+   p.send('dialog',title='Safari Zone',message='For ₽500, explore the Safari Zone with 30 Safari Balls. Your game lasts 600 steps, or until you run out of balls.',actions=['safari_enter'],disabledActions=[] if p.state['money']>=500 else ['safari_enter'],npc=nid,map=m['id']);return
+  gifts=kanto_gifts.options(self.c,p.state,m['id'],nid)
+  if isinstance(action,str) and action.startswith('gift:'):
+   gift_id=action[5:];require(any(g['id']==gift_id for g in gifts),'That reward belongs to a different character or location.')
+   candidate=kanto_gifts.grant(self.c,p.state,gift_id)
+   await self.commit(p,candidate)
+   gift=next(g for g in gifts if g['id']==gift_id);item=self.c.items[gift['item']]
+   p.send('dialog',title='Received '+item['name'],message='Your '+item['name']+' and reward progress were saved.',actions=[],npc=nid,map=m['id'],giftOptions=kanto_gifts.options(self.c,p.state,m['id'],nid));p.audio('item',item=gift['item']);return
+  pickup=self.adventure.item_by_npc.get((m['id'],nid))
+  if pickup:
+   require(o.get('itemPickup')==pickup['id'],'That field item binding is unavailable.');require(action in (None,'talk','pickup'),'This Poké Ball only contains its field item.');await self.award_pickup(p,pickup);return
+  if is_cut_tree(o):await self.cut_tree(p,d,o);return
+  if o.get('storyEvent'):await self.story_object(p,d,o);return
+  if m['id']=='johto_34_13' and nid in (3,5) and o.get('graphics')==30:
+   if action=='apricorn':await self.item_command(p,{**d,'op':'item.service','item':'whtapricorn','action':'craft'});return
+   require(action in (None,'talk'),'Choose Kurt’s Apricorn service.');p.send('dialog',title='Kurt — Apricorn craftsman',message='Bring me a White Apricorn and I will make a Fast Ball. NXT crafting is immediate; a Fast Ball is more effective on species with high base Speed.',actions=['apricorn'],disabledActions=[] if p.state['items'].get('whtapricorn',0)>0 else ['apricorn'],npc=nid,map=m['id']);return
+  if m['id']=='kanto_12_4' and nid==2 and action in (None,'talk') and p.state.get('kantoField',{}).get('fossil'):
+   pending=p.state['kantoField']['fossil'];p.send('dialog',title='Fossil restoration',message=('Your revived Pokémon is ready!' if pending.get('ready') else 'Your fossil is being revived. Leave this room and come back.'),actions=['fossil_collect'],disabledActions=[] if pending.get('ready') else ['fossil_collect'],npc=nid,map=m['id']);return
+  if m['id']=='kanto_12_4' and nid==2 and action=='fossil_collect':
+   candidate,message,_=kanto_field.fossil_collect(self.c,p.state,owner=p.username,max_owned=self.s.max_owned)
+   await self.commit(p,candidate);p.send('dialog',title='Fossil restoration',message=message,actions=[],npc=nid,map=m['id']);return
+  center=self.c.data.get('centers',{}).get(m['id'],{});trainer=self.adventure.by_npc.get((m['id'],nid));rom_message=render_npc_dialogue(self.c,p.state,p.username,m['id'],nid)
+  if nid in center.get('nurseNpcIds',[]):
+   if action=='heal':await self.heal(p,npc=nid);return
+   require(action in (None,'talk','pc'),'Choose a Pokemon Center service.');actions=['heal']
+   if self.adventure.pc_available(p.state):actions.append('pc')
+   p.send('dialog',title='Nurse Joy',message=rom_message or 'Welcome to the Pokemon Center! May I restore your Pokemon to full health? You can also manage your party and storage here.',actions=actions,npc=nid);return
+  if nid in center.get('pcNpcIds',[]):
+   require(action in (None,'talk','pc'),'Choose the storage service.');p.send('dialog',title='Pokemon Storage PC',message=rom_message or 'Deposit and withdraw your Pokemon. Keep one healthy partner with you.',actions=['pc'],npc=nid);return
+  if trainer:
+   if action=='battle':
+    self.adventure.can_challenge(p.state,trainer);require(any(mon['hp']>0 for mon in self.party(p)),'Your party needs healing.');team=[]
+    for member in trainer['team']:
+     enemy=self.c.new_mon(member['species'],member['level'],trainer['name'],variety='normal');iv=max(0,min(255,int(member.get('iv',0))))*31//255;enemy.update(ivs=[iv]*6,nature=0,shiny=False,heldItemId=max(0,int(member.get('heldItemId',0) or 0)));self.c.heal(enemy);moves=[mid for mid in member.get('moves',[]) if str(mid) in self.c.moves]
+     if moves:enemy['moves']=[{'id':mid,'pp':self.c.moves[str(mid)]['pp']} for mid in moves[:4]]
+     team.append(enemy)
+    require(bool(team),'This trainer team is unavailable.');state=copy.deepcopy(p.state)
+    seeker_ready=state.get('kantoField',{}).get('vsSeekerReady',[]);seeker_rematch=trainer['id'] in seeker_ready
+    if seeker_rematch:seeker_ready.remove(trainer['id'])
+    self.adventure.observe(state,[mon['species'] for mon in team]);self.c.varieties.observe(state,team);await self.commit(p,state)
+    b=Battle(self.c,'trainer',[p.id,None],[p.username,trainer['name']],[self.party(p),team],[p.state['items'],{}],self.s.int('gameplay','battle_turn_seconds'),audio_source=m['id'].split('_',1)[0],terrain=self.battle_terrain(p.state));b.adventure_trainer=trainer;b.kanto_rematch=seeker_rematch;self.battles[b.id]=b;p.battle=b.id;p.send('battle',battle=b.view(0));return
+   require(action in (None,'talk'),'Choose a trainer interaction.');defeated=trainer['id'] in p.state['adventure']['trainers'];gym=self.adventure.gym(trainer);summary=', '.join(f'{self.c.species[t["species"]]["name"]} Lv. {t["level"]}' for t in trainer['team']);message=('Gym challenge. ' if gym else 'Trainer challenge. ')+summary+(' Rematch: no repeat EXP, money or badge rewards.' if defeated else 'Your first victory earns a permanent record and a reward.');p.send('dialog',title=trainer['name'],message=message,actions=['battle'],npc=nid,map=m['id'],giftOptions=gifts);return
+  require(action in (None,'talk'),'This character does not offer that service.')
+  if o['graphics']==68:p.send('dialog',title='Poke Mart',message=rom_message or 'Welcome! Purchase supplies for your adventure from the Bag panel.',actions=['shop'],npc=nid,map=m['id'],giftOptions=gifts)
+  else:p.send('dialog',title=m['name'],message=rom_message or 'Explore the region, discover Pokemon, and challenge local trainers. Your Adventure Journal tracks your next goals. Original story scripts are not executed by this MMO.',actions=[],npc=nid,map=m['id'],giftOptions=gifts)
+ async def heal(self,p,npc=None):
+  self.free(p);self.adventure.require_nurse(p.state,npc);s=copy.deepcopy(p.state)
+  for mon in s['creatures']:
+   if mon['uid'] in s['party']:self.c.heal(mon)
+  s['adventure']['lastCenter']=s['map'];s['adventure']['lastCenterReturns']=return_stack(self.c,s);s['adventure']['lastCenterPosition']=self.c.data['centers'][s['map']].get('respawnByNpc',{}).get(str(npc),self.c.data['centers'][s['map']].get('respawn',self.c.maps[s['map']]['spawn']));await self.commit(p,s);p.send('dialog',title='Nurse Joy',message='Your party is fully restored. We hope to see you again!',actions=['pc'] if self.adventure.pc_available(s) else [],npc=npc);p.audio('heal',atNurse=True)
+ def escape_allowed(self,m):
+  return bool(m.get('escapeAllowed',m.get('mapType')==4))
+ def movement_step_ms(self,state):
+  return max(65,self.s.step_ms//2) if state.get('bicycle') else self.s.step_ms
+ def item_context(self,state):
+  m=self.c.maps[state['map']];x,y=state['x'],state['y']
+  close=lambda o:max(abs(x-o['x']),abs(y-o['y']))<=2
+  marts=[mart for mart in self.c.data.get('adventureRom',{}).get('kantoMarts',{}).values() if mart['map']==m['id'] and any(o['id']==mart['npc'] and close(o) for o in m.get('objects',[]))]
+  stock=sorted({key for mart in marts for key in mart.get('items',[])}) if m['id'].startswith('kanto_') and not self.s.flag('world','allow_alpha_atlas') else None
+  return {**kanto_field.context(self.c,state),'shopItems':stock,'mart':bool(marts) or self.s.flag('world','allow_alpha_atlas') or any(o.get('graphics')==68 and close(o) for o in m.get('objects',[])),
+          'apricorn':m['id']=='johto_34_13' and any(o.get('id') in (3,5) and o.get('graphics')==30 and close(o) for o in m.get('objects',[])),
+          'escape':self.escape_allowed(m),'bicycle':bool(state.get('bicycle')),'safari':safari.public(state),'stepMs':self.movement_step_ms(state)}
+ def escape_destination(self,state):
+  """Prefer the recorded entrance; conservatively recover older cave saves."""
+  def valid(anchor):
+   if not isinstance(anchor,dict):return False
+   dest=self.c.maps.get(anchor.get('map'));x,y=anchor.get('x'),anchor.get('y')
+   return bool(dest and not self.escape_allowed(dest) and type(x) is int and type(y) is int and self.walkable(dest,x,y,bool(anchor.get('surf')),state=state))
+  anchor=state.get('escapeAnchor')
+  if valid(anchor):return copy.deepcopy(anchor)
+  for entry in reversed(return_stack(self.c,state)):
+   anchor={'map':entry['outside'],'x':entry['x'],'y':entry['y'],'surf':False,'warpReturns':[]}
+   if valid(anchor):return anchor
+  # A legacy save may predate entrance recording. Only choose an unambiguous,
+  # already discovered outdoor exit over verified static portal edges. Never
+  # invent a home teleport or use an unvisited/ambiguous route to bypass gates.
+  visited=set(state.get('adventure',{}).get('visited',[]));pending=[state['map']];seen=set()
+  for _ in range(32):
+   next_maps=[];candidates={}
+   for key in pending:
+    if key in seen:continue
+    seen.add(key)
+    for warp in self.c.maps[key].get('warps',[]):
+     access=warp.get('access') or {};dest=self.c.maps.get(warp.get('target'));point=access.get('arrival')
+     if not dest or access.get('dynamic') or not isinstance(point,list) or len(point)!=2:continue
+     if self.escape_allowed(dest):
+      if dest['id'] not in seen:next_maps.append(dest['id'])
+     elif dest.get('mapType') in (1,2,3) and dest['id'] in visited:
+      anchor={'map':dest['id'],'x':point[0],'y':point[1],'surf':False,'warpReturns':[],'recovered':True}
+      if valid(anchor):candidates.setdefault(dest['id'],anchor)
+   if candidates:return next(iter(candidates.values())) if len(candidates)==1 else None
+   pending=next_maps
+   if not pending:break
+  return None
+ async def item_command(self,p,d):
+  """Serialize every item mutation through the existing durable commit path."""
+  self.free(p);op=d.get('op');key=d.get('item');nonce=d.get('requestId')
+  require(d.get('map',p.state['map'])==p.state['map'],'That item menu belongs to another map. Reopen the Bag.')
+  digest=None
+  if nonce is not None:
+   require(isinstance(nonce,str) and 1<=len(nonce)<=64 and all(c.isalnum() or c in '-_.:' for c in nonce),'Invalid item action identifier.')
+   digest=hashlib.sha256(json.dumps({k:v for k,v in d.items() if k!='requestId'},sort_keys=True,separators=(',',':')).encode()).hexdigest()
+   previous=next((r for r in p.state.get('itemReceipts',[]) if r['id']==nonce),None)
+   if previous:
+    require(previous['digest']==digest,'That action identifier was already used for another request.')
+    self.send_state(p);p.send('notice',message='That item action was already saved; it was not applied twice.');return
+  if op=='buy':
+   require(self.item_context(p.state)['mart'],'Visit a Poké Mart and stand near its clerk to buy items.')
+   item=self.item_system.definition(key);require(item.get('buyable',True),'That item is not sold in Poké Marts.')
+   stock=self.item_context(p.state).get('shopItems')
+   alias=self.c.items.get('fr_'+key,{})
+   legacy_equivalent=bool(stock is not None and 'fr_'+key in stock and alias.get('sourceId')==item.get('sourceId') and alias.get('price')==item.get('price') and alias.get('mechanics',{}).get('effect')==self.item_system.rule(key).get('effect'))
+   require(stock is None or key in stock or legacy_equivalent,'This shop does not stock that item.')
+   count=integer(d.get('quantity'),1,99,'Quantity');cost=item['price']*count
+   require(p.state['money']>=cost,'You do not have enough money.')
+   require(p.state['items'].get(key,0)+count<=999,'This stack would exceed 999.')
+   candidate=copy.deepcopy(p.state);candidate['money']-=cost;candidate['items'][key]=candidate['items'].get(key,0)+count
+   message='Purchase saved. Your money and items were updated together.'
+  elif op in ('item.give','item.take'):
+   candidate=self.item_system.equip(p.state,d,take=op=='item.take');message='Held item update saved.'
+  elif op=='sell':
+   require(self.item_context(p.state)['mart'],'Visit a Poké Mart and stand near its clerk to sell items.')
+   candidate=self.item_system.sell(p.state,key,d.get('quantity'));message='Sale saved. Your money and item quantity were updated together.'
+  elif op=='item.service':
+   if self.item_system.definition(key).get('source')=='kanto':
+    candidate,message,_=kanto_field.service(self.c,p.state,key,d,owner=p.username,max_owned=self.s.max_owned)
+   else:
+    if key=='whtapricorn':require(self.item_context(p.state)['apricorn'],'Visit Kurt in his Azalea Town house and stand close to him.')
+    elif key=='coincase':require(self.item_context(p.state)['mart'],'The NXT coin exchange is available beside Poké Mart clerks.')
+    candidate=self.item_system.service(p.state,key,{**d,'_blockId':uuid.uuid4().hex});message='Item service completed and saved.'
+  else:
+   require(op=='use','Unknown item action.');self.item_system._owned_item(p.state['items'],key);effect=self.item_system.rule(key)['effect']
+   if self.c.items[key].get('source')=='kanto' and effect=='pokeflute' and any(o.get('storyEvent','').startswith('fr_snorlax_') and max(abs(o['x']-p.state['x']),abs(o['y']-p.state['y']))<=2 and not story_cleared(p.state,o['storyEvent']) for o in self.c.maps[p.state['map']].get('objects',[])):
+    obj=next(o for o in self.c.maps[p.state['map']]['objects'] if o.get('storyEvent','').startswith('fr_snorlax_') and max(abs(o['x']-p.state['x']),abs(o['y']-p.state['y']))<=2 and not story_cleared(p.state,o['storyEvent']))
+    await self.npc(p,{'npc':obj['id'],'map':p.state['map'],'action':'pokeflute'});return
+   elif self.c.items[key].get('source')=='kanto' and effect in kanto_field.HANDLED_EFFECTS:
+    if effect=='fishing' and p.state['map'] in safari.MAPS:require(safari.active(p.state),'Visit the Safari Zone receptionist to start a Safari Game.')
+    candidate,message,extra=kanto_field.use(self.c,p.state,key,d,owner=p.username,max_owned=self.s.max_owned)
+    if extra.get('hiddenPickup'):
+     pickup=self.adventure.hidden_pickups.get(extra['hiddenPickup']);require(pickup is not None,'That hidden item is unavailable.')
+     candidate=self.adventure.collect_item(candidate,pickup)
+    encounter=extra.get('encounter')
+    if encounter:
+     # Acquisition and all item-state changes are committed with the battle's
+     # encounter observation before a successful response is sent.
+     enemy=self.c.new_mon(encounter['species'],encounter['level'],variety=self.c.varieties.roll(encounter['species']))
+     self.adventure.observe(candidate,[enemy['species']]);self.c.varieties.observe(candidate,[enemy])
+     if nonce:candidate['itemReceipts']=(candidate.get('itemReceipts',[])[-63:]+[{'id':nonce,'digest':digest}])
+     await self.commit(p,candidate)
+     b=Battle(self.c,'wild',[p.id,None],[p.username,'Wild '+self.c.varieties.display_name(enemy)],[self.party(p),[enemy]],[p.state['items'],{}],self.s.int('gameplay','battle_turn_seconds'),audio_source=p.state['map'].split('_',1)[0],terrain=self.battle_terrain(p.state),caught_species=[p.state.get('adventure',{}).get('caught',[]),[]])
+     if encounter.get('storyEvent'):b.story_event=encounter['storyEvent'];b.story_map=p.state['map']
+     self.battles[b.id]=b;p.battle=b.id;p.last_encounter=time.monotonic();p.send('battle',battle=b.view(0));return
+   elif effect=='escape':
+    require(self.escape_allowed(self.c.maps[p.state['map']]),'Escape Rope cannot be used on this map.')
+    anchor=self.escape_destination(p.state);require(anchor is not None,'This older save has no unambiguous cave entrance. Exit and re-enter once to record it; your Escape Rope was not used.')
+    candidate=self.relocation_state(p,anchor['map'],anchor['x'],anchor['y'],surf=bool(anchor.get('surf')));candidate['warpReturns']=return_stack(self.c,{'warpReturns':anchor.get('warpReturns',[])})
+    candidate['items'][key]-=1;candidate.pop('escapeAnchor',None);message='Used Escape Rope and returned safely to the entrance.'
+   elif effect=='story':
+    obj=next((o for o in self.c.maps[p.state['map']].get('objects',[]) if o.get('storyEvent')),None)
+    require(obj is not None,'Use the SquirtBottle beside the odd tree on Route 36 after earning Whitney’s badge.')
+    await self.npc(p,{'npc':obj['id'],'map':p.state['map'],'action':'squirtbottle'});return
+   else:candidate=self.item_system.field_use(p.state,key,d);message=self.c.items[key]['name']+' used successfully. Your changes were saved.'
+  if nonce:
+   receipts=[r for r in candidate.get('itemReceipts',[]) if r['id']!=nonce][-63:];receipts.append({'id':nonce,'digest':digest});candidate['itemReceipts']=receipts
+  oldmap=p.state['map'];await self.commit(p,candidate)
+  if p.state['map']!=oldmap:self.follower_anchor(p);p.last_encounter=time.monotonic();self.send_map(p,'escape_rope')
+  p.send('notice',message=message)
+  if op=='buy':p.audio('purchase',item=key,quantity=count)
+  else:p.audio('item',item=key)
+ async def dispatch(self,p,d):
+  async with self.lock:
+   require(not p.closed and self.players.get(p.id) is p,'Your session is closed.');require(p.command_bucket.take(),'Too many commands; please slow down.');op=d.get('op')
+   require(not self.stopping,'World is shutting down.')
+   require(not p.frozen or op in ('move','chat','ping','save'),'Your gameplay is frozen by the local administrator.')
+   if op=='move':await self.move(p,d)
+   elif op=='chat':
+    require(p.chat_bucket.take(),'Chat rate limit: please wait a moment.');require(time.monotonic()>=p.muted_until,'You are muted by the world administrator.');channel=d.get('channel');message=d.get('text');require(channel in self.chat,'Choose General or Trade.');require(isinstance(message,str) and 1<=len(message.strip())<=240 and all(ord(x)>=32 for x in message),'Messages must be 1-240 characters on one line.')
+    msg={'username':p.username,'playerId':p.id,'text':message.strip(),'time':int(time.time())};self.chat[channel].append(msg)
+    for q in self.players.values():q.send('chat',channel=channel,**msg)
+   elif op=='invite':await self.invite(p,d)
+   elif op=='ai.dashboard':await self.autonomous.dashboard(p)
+   elif op=='ai.challenge':await self.autonomous.challenge(p,d.get('id'))
+   elif op=='invite.answer':await self.answer_invite(p,d)
+   elif op=='trade':await self.trade_action(p,d)
+   elif op=='battle':await self.battle_action(p,d)
+   elif op=='encounter':
+    if await self.start_wild(p) is False:p.send('notice',message='Repel kept a lower-level wild Pokémon away.')
+   elif op=='npc':await self.npc(p,d)
+   elif op=='interact':await self.interact(p,d)
+   elif op=='heal':raise RequestError('Speak to Nurse Joy at a Pokemon Center to heal your party.')
+   elif op=='journal.claim':
+    self.free(p);await self.commit(p,self.adventure.claim(p.state,d.get('id')));p.send('notice',message='Objective reward received and saved.');p.audio('purchase')
+   elif op=='pc':
+    self.free(p);old=p.state['party'][0];await self.commit(p,self.adventure.pc(p.state,d.get('action'),d.get('uid')));p.audio('party_changed',species=self.party(p)[0]['species'],leadChanged=old!=p.state['party'][0])
+   elif op in ('pokemon.learn','pokemon.remember','pokemon.evolve','pokemon.evolution.defer','pokemon.evolution.resume'):
+    self.free(p);growth=self.c.growth;uid=d.get('uid')
+    if op=='pokemon.learn':state=growth.learn(p.state,uid,d.get('move'),d.get('slot'))
+    elif op=='pokemon.remember':state=growth.remember(p.state,uid,d.get('move'),d.get('slot'))
+    elif op=='pokemon.evolve':state=growth.evolve(p.state,uid,d.get('target'),item=d.get('item'))
+    elif op=='pokemon.evolution.defer':state=growth.defer_evolution(p.state,uid,d.get('target'))
+    else:state=growth.resume_evolution(p.state,uid,d.get('target'))
+    await self.commit(p,state);p.send('notice',message='Pokemon update saved.');p.audio('level_up' if op=='pokemon.evolve' else 'party_changed')
+   elif op=='party':
+    self.free(p);ids=d.get('party');require(isinstance(ids,list) and 1<=len(ids)<=6 and all(isinstance(i,str) for i in ids) and len(ids)==len(set(ids)),'A party must contain 1-6 distinct Pokemon.');require(all(i in {m['uid'] for m in p.state['creatures']} for i in ids),'That Pokemon is not yours.');old_party=list(p.state['party']);require(set(ids)==set(old_party) or self.adventure.pc_available(p.state),'Visit a Pokemon Center PC to deposit or withdraw Pokemon.');require(any(m['hp']>0 for m in p.state['creatures'] if m['uid'] in ids),'Keep at least one healthy Pokemon in your party.');s=copy.deepcopy(p.state);s['party']=list(ids);await self.commit(p,s)
+    if ids!=old_party:p.audio('party_changed',species=self.party(p)[0]['species'],leadChanged=ids[0]!=old_party[0])
+   elif op in ('buy','use','sell','item.give','item.take','item.service'):await self.item_command(p,d)
+   elif op=='travel':
+    self.free(p);dest=d.get('map');require(isinstance(dest,str) and dest in self.c.maps,'Unknown destination.');
+    if not self.s.flag('world','allow_alpha_atlas'):self.adventure.can_travel(p.state,dest)
+    await self.relocate_saved(p,dest,surf=False,clear_returns=True)
+   elif op=='surf':await self.start_surf(p,d)
+   elif op=='unstuck':
+    self.free(p);await self.relocate_saved(p,self.c.data['homes'][p.state['home']],transition='home',surf=False,clear_returns=True);p.send('notice',message='Returned safely to your home hub.')
+   elif op=='ping':p.send('pong',nonce=d.get('nonce') if isinstance(d.get('nonce'),(int,float)) else 0)
+   elif op=='save':await asyncio.to_thread(self.db.save_many,[(p.id,copy.deepcopy(p.state))]);p.saved_revision=p.state['revision'];p.send('notice',message='Character saved.');p.audio('save')
+   else:raise RequestError('Unknown command.')
+ async def leave(self,p):
+  async with self.lock:
+   if self.players.get(p.id) is not p:return
+   if p.trade in self.trades:self.cancel_trade(self.trades[p.trade],'A trainer disconnected. The uncommitted exchange was cancelled.')
+   if p.battle in self.battles:
+    b=self.battles.pop(p.battle)
+    # A player disconnecting from an autonomous ranked challenge must release
+    # that bot immediately so it can resume field life instead of waiting for
+    # the engagement safety timeout.
+    self.autonomous.release_engagement(getattr(b,'ai_trainer_id',None))
+    for side,pid in enumerate(b.players):
+     other=self.players.get(pid)
+     if other and other.id!=p.id:b.ended=True;b.winner=side;b.logs=['The other trainer disconnected. The duel is over.'];b.reset_audio();b.audio('battle_end',reason='peer_disconnected');other.battle=None;other.send('battle',battle=b.view(side))
+    p.battle=None
+   for key,v in list(self.invites.items()):
+    if p.id in (v['from'],v['to']):
+     peer=self.players.get(v['to'] if p.id==v['from'] else v['from'])
+     if peer:peer.send('invite_expired',id=key)
+     self.invites.pop(key,None)
+   try:await asyncio.to_thread(self.db.save_many,[(p.id,copy.deepcopy(p.state))])
+   except Exception:log.exception('Logout save failed for %s; last committed state remains in DB',p.username)
+   self.players.pop(p.id,None);p.closed=True;self.emit('logout',player=p);log.info('Left %s; online=%d',p.username,len(self.players))
+ async def tick(self):
+  begin=time.monotonic()
+  # The lease-protected in-memory autonomous population is authoritative while the
+  # world is running. Simulation remains outside the gameplay actor lock, and no
+  # periodic full-population JSON reload is performed on the 10 Hz world path.
+  await self.autonomous.maybe_tick()
+  # Persistent wild training/captures are independent of observation. This
+  # background scheduler progresses every non-materialized bot even when there are
+  # zero connected humans; active maps only decide which cohort gets visible
+  # high-frequency movement instead of background simulation.
+  active_maps={p.state['map'] for p in self.players.values() if not p.closed}
+  await self.autonomous.background_field_tick(active_maps)
+  # High-frequency bot walking is materialized only on maps with human observers.
+  # It remains outside the gameplay actor lock so autonomous pathing/database work
+  # cannot stall human movement, chat, battles or trades.
+  await self.autonomous.field_tick(active_maps)
+  async with self.lock:
+   now=time.monotonic()
+   for key,v in list(self.invites.items()):
+    if v['expires']<now:
+     for pid in (v['from'],v['to']):
+      if pid in self.players:self.players[pid].send('invite_expired',id=key)
+     self.invites.pop(key,None)
+   for t in list(self.trades.values()):
+    if t['deadline']<now:self.cancel_trade(t,'The trade timed out. Nothing was transferred.')
+   for b in list(self.battles.values()):
+    if b.timeout():await self.resolve_battle(b)
+   buckets=collections.defaultdict(list)
+   for q in self.players.values():
+    s=q.state;buckets[(s['map'],s['x']//8,s['y']//8)].append(q)
+   r=self.s.interest_radius;cell=math.ceil(r/8)
+   for p in self.players.values():
+    if p.closed:continue
+    s=p.state;seen={};changed=[]
+    for cy in range(s['y']//8-cell,s['y']//8+cell+1):
+     for cx in range(s['x']//8-cell,s['x']//8+cell+1):
+      for q in buckets.get((s['map'],cx,cy),()):
+       if q.closed or not self.nearby(p,q,r):continue
+       e=q.entity();signature=tuple(e.values());seen[q.id]=signature
+       if p.seen.get(q.id)!=signature:changed.append(e)
+    for e in self.autonomous.visible(p,r):
+     signature=tuple(e.values());seen[e['id']]=signature
+     if p.seen.get(e['id'])!=signature:changed.append(e)
+    gone=[i for i in p.seen if i not in seen]
+    if changed or gone or self.ticks%self.s.tick_hz==0:p.send('scene',map=s['map'],players=changed,gone=gone,online=len(self.players))
+    p.seen=seen
+   self.ticks+=1
+  self.last_tick_ms=(time.monotonic()-begin)*1000;self.max_tick_ms=max(self.max_tick_ms,self.last_tick_ms)
+ async def save_all(self):
+  # Persist autonomous field positions/party development before the periodic or
+  # shutdown human save. This makes visible bot movement survive every session.
+  await self.autonomous.flush_world()
+  async with self.lock:
+   sessions={p.id:p for p in self.players.values() if p.state['revision']>p.saved_revision}
+   records=[(uid,copy.deepcopy(p.state)) for uid,p in sessions.items()]
+  await asyncio.to_thread(self.db.save_many,records)
+  async with self.lock:
+   for uid,state in records:
+    if self.players.get(uid) is sessions[uid]:sessions[uid].saved_revision=max(sessions[uid].saved_revision,state['revision'])
+  return len(records)
