@@ -13,6 +13,16 @@ See `Docs/REGIONAL_SURF.md` and `Docs/REGIONAL_SURF_TEST_REPORT.md`.
 
 The complete 0.6.11 Kanto item/Bag update is included below.
 
+<img width="3840" height="2079" alt="0" src="https://github.com/user-attachments/assets/231ea86a-bcac-4df8-bddd-72f545ac4f9b" />
+
+<img width="3840" height="2081" alt="1" src="https://github.com/user-attachments/assets/277e274c-b46a-4152-a652-fab38ec15453" />
+
+<img width="3840" height="2078" alt="2" src="https://github.com/user-attachments/assets/de57747b-6c02-4add-ae12-f675e0d67543" />
+
+<img width="3840" height="2074" alt="3" src="https://github.com/user-attachments/assets/ee9d9d8b-d040-44b1-a7e3-c6615f37c6ea" />
+
+<img width="3840" height="2077" alt="4" src="https://github.com/user-attachments/assets/051401c2-49f0-4e36-8b7a-e4d26b4c1e5f" />
+
 # Pokemon NXT MMO
 
 **0.6.11-alpha — FireRed Kanto items and Bag overhaul.** This release adds native
